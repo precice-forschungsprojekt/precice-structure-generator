@@ -5,7 +5,6 @@
   "properties": {
     "precice-configuration": {
       "type": "object",
-      "required": ["mesh", "participant"],
       "properties": {
         "log": {
           "type": "object",
@@ -13,66 +12,61 @@
             "sink": {
               "type": "object",
               "properties": {
-                "type": { "type": "string", "enum": ["stream", "file"] },
-                "output": { "type": "string" },
+                "filter": { "type": "string" },
                 "format": { "type": "string" },
-                "filter": { "type": "string" }
+                "enabled": { "type": "boolean" }
               }
             }
           }
         },
-        "profiling": {
-          "type": "object",
-          "properties": {
-            "directory": { "type": "string" }
-          }
-        },
-        "data": {
+        "data:vector": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["name"],
+            "required": ["@name"],
             "properties": {
-              "name": { "type": "string" },
-              "dimensions": { "type": "integer", "minimum": 1 }
+              "@name": { "type": "string" }
             }
           }
         },
         "mesh": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["name"],
-            "properties": {
-              "name": { "type": "string" },
-              "use-data": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "required": ["name"],
-                  "properties": {
-                    "name": { "type": "string" }
-                  }
-                }
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/meshItem"
               }
+            },
+            {
+              "$ref": "#/definitions/meshItem"
             }
-          }
+          ]
         },
         "participant": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["name"],
+            "required": ["@name"],
             "properties": {
-              "name": { "type": "string" },
-              "write-data": {
+              "@name": { "type": "string" },
+              "provide-mesh": {
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "required": ["name", "mesh"],
+                  "required": ["@name"],
                   "properties": {
-                    "name": { "type": "string" },
-                    "mesh": { "type": "string" }
+                    "@name": { "type": "string" }
+                  }
+                }
+              },
+              "receive-mesh": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["@name", "@from"],
+                  "properties": {
+                    "@name": { "type": "string" },
+                    "@from": { "type": "string" }
                   }
                 }
               },
@@ -80,177 +74,144 @@
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "required": ["name", "mesh"],
+                  "required": ["@name", "@mesh"],
                   "properties": {
-                    "name": { "type": "string" },
-                    "mesh": { "type": "string" }
+                    "@name": { "type": "string" },
+                    "@mesh": { "type": "string" }
                   }
                 }
               },
-              "mapping": {
+              "write-data": {
                 "type": "array",
                 "items": {
                   "type": "object",
-                  "required": ["type", "from", "to", "direction", "constraint"],
+                  "required": ["@name", "@mesh"],
                   "properties": {
-                    "type": { 
-                      "type": "string",
-                      "enum": ["nearest-neighbor", "nearest-projection", "nearest-neighbor-gradient"]
-                    },
-                    "from": { "type": "string" },
-                    "to": { "type": "string" },
-                    "direction": { 
-                      "type": "string",
-                      "enum": ["read", "write"]
-                    },
-                    "constraint": {
-                      "type": "string",
-                      "enum": ["consistent", "conservative"]
+                    "@name": { "type": "string" },
+                    "@mesh": { "type": "string" }
+                  }
+                }
+              },
+              "mapping:rbf": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["@direction", "@from", "@to", "@constraint"],
+                  "properties": {
+                    "@direction": { "type": "string", "enum": ["read", "write"] },
+                    "@from": { "type": "string" },
+                    "@to": { "type": "string" },
+                    "@constraint": { "type": "string", "enum": ["consistent", "conservative"] },
+                    "basis-function:thin-plate-splines": {
+                      "type": ["object", "null"]
                     }
                   }
+                }
+              },
+              "watch-point": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["@mesh", "@name", "@coordinate"],
+                  "properties": {
+                    "@mesh": { "type": "string" },
+                    "@name": { "type": "string" },
+                    "@coordinate": { "type": "string" }
+                  }
+                }
+              },
+              "export:vtk": {
+                "type": "object",
+                "properties": {
+                  "@directory": { "type": "string" }
                 }
               }
             }
           }
         },
-        "coupling-scheme": {
-          "type": "object",
+        "m2n:sockets": {
           "oneOf": [
             {
-              "type": "object",
-              "required": ["serial-explicit"],
-              "properties": {
-                "serial-explicit": {
-                  "type": "object",
-                  "required": ["participants", "max-time", "time-window-size", "exchange"],
-                  "properties": {
-                    "participants": {
-                      "type": "object",
-                      "required": ["first", "second"],
-                      "properties": {
-                        "first": { "type": "string" },
-                        "second": { "type": "string" }
-                      }
-                    },
-                    "max-time": { "type": "number" },
-                    "time-window-size": { "type": "number" },
-                    "exchange": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": ["data", "mesh", "from", "to"],
-                        "properties": {
-                          "data": { "type": "string" },
-                          "mesh": { "type": "string" },
-                          "from": { "type": "string" },
-                          "to": { "type": "string" }
-                        }
-                      }
-                    }
-                  }
-                }
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/m2nSocketItem"
               }
             },
             {
+              "$ref": "#/definitions/m2nSocketItem"
+            }
+          ]
+        },
+        "coupling-scheme:serial-explicit": {
+          "type": "object",
+          "required": ["time-window-size", "participants", "exchange"],
+          "properties": {
+            "time-window-size": {
               "type": "object",
-              "required": ["parallel-explicit"],
+              "required": ["@value"],
               "properties": {
-                "parallel-explicit": {
-                  "type": "object",
-                  "required": ["participants", "max-time", "time-window-size", "exchange"],
-                  "properties": {
-                    "participants": {
-                      "type": "object",
-                      "required": ["first", "second"],
-                      "properties": {
-                        "first": { "type": "string" },
-                        "second": { "type": "string" }
-                      }
-                    },
-                    "max-time": { "type": "number" },
-                    "time-window-size": { "type": "number" },
-                    "exchange": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": ["data", "mesh", "from", "to"],
-                        "properties": {
-                          "data": { "type": "string" },
-                          "mesh": { "type": "string" },
-                          "from": { "type": "string" },
-                          "to": { "type": "string" }
-                        }
-                      }
-                    }
-                  }
-                }
+                "@value": { "type": "string" }
               }
             },
-            {
+            "max-time": {
               "type": "object",
-              "required": ["serial-implicit"],
+              "required": ["@value"],
               "properties": {
-                "serial-implicit": {
-                  "type": "object",
-                  "required": ["participants", "max-time", "time-window-size", "exchange", "max-iterations", "relative-convergence-measure"],
-                  "properties": {
-                    "participants": {
-                      "type": "object",
-                      "required": ["first", "second"],
-                      "properties": {
-                        "first": { "type": "string" },
-                        "second": { "type": "string" }
-                      }
-                    },
-                    "max-time": { "type": "number" },
-                    "time-window-size": { "type": "number" },
-                    "max-iterations": { "type": "integer", "minimum": 1 },
-                    "relative-convergence-measure": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": ["data", "mesh", "limit"],
-                        "properties": {
-                          "data": { "type": "string" },
-                          "mesh": { "type": "string" },
-                          "limit": { "type": "number" }
-                        }
-                      }
-                    },
-                    "exchange": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": ["data", "mesh", "from", "to"],
-                        "properties": {
-                          "data": { "type": "string" },
-                          "mesh": { "type": "string" },
-                          "from": { "type": "string" },
-                          "to": { "type": "string" }
-                        }
-                      }
-                    },
-                    "acceleration": {
-                      "type": "object",
-                      "properties": {
-                        "type": { 
-                          "type": "string",
-                          "enum": ["constant", "aitken", "IQN-ILS", "IQN-IMVJ"]
-                        },
-                        "max-used-iterations": { "type": "integer" },
-                        "time-windows-reused": { "type": "integer" },
-                        "filter": { "type": "string" },
-                        "preconditioner": { "type": "string" },
-                        "data": { "type": "string" },
-                        "initial-relaxation": { "type": "number" }
-                      }
-                    }
-                  }
+                "@value": { "type": "string" }
+              }
+            },
+            "participants": {
+              "type": "object",
+              "required": ["@first", "@second"],
+              "properties": {
+                "@first": { "type": "string" },
+                "@second": { "type": "string" }
+              }
+            },
+            "exchange": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["@data", "@mesh", "@from", "@to"],
+                "properties": {
+                  "@data": { "type": "string" },
+                  "@mesh": { "type": "string" },
+                  "@from": { "type": "string" },
+                  "@to": { "type": "string" }
                 }
               }
             }
-          ]
+          }
         }
+      }
+    }
+  },
+  "definitions": {
+    "meshItem": {
+      "type": "object",
+      "required": ["@name", "@dimensions"],
+      "properties": {
+        "@name": { "type": "string" },
+        "@dimensions": { "type": "string", "pattern": "^[1-3]$" },
+        "use-data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["@name"],
+            "properties": {
+              "@name": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "m2nSocketItem": {
+      "type": "object",
+      "required": ["@acceptor", "@connector"],
+      "properties": {
+        "@acceptor": { "type": "string" },
+        "@connector": { "type": "string" },
+        "@exchange-directory": { "type": "string" }
       }
     }
   }

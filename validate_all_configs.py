@@ -2,7 +2,9 @@
 
 import os
 from pathlib import Path
-from validate_config import load_schema, xml_to_json, validate_config
+import sys
+import glob
+from validate_config import load_schema, convert_xml_to_json, validate_config
 
 def find_precice_configs(start_path):
     """Find all preCICE configuration files recursively."""
@@ -41,7 +43,7 @@ def main():
         print(f"\n{'='*80}")
         print(f"Validating: {config_file}")
         try:
-            json_data = xml_to_json(config_file)
+            json_data = convert_xml_to_json(config_file)
             if validate_config(json_data, schema):
                 valid_configs.append(config_file)
             else:

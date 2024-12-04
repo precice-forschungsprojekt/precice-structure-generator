@@ -7,15 +7,24 @@ import argparse
 import sys
 from pathlib import Path
 
-def xml_to_json(xml_path):
+def convert_xml_to_json(xml_path):
     """Convert XML file to JSON format."""
-    try:
-        with open(xml_path, 'r') as f:
-            xml_content = f.read()
-        return xmltodict.parse(xml_content)
-    except Exception as e:
-        print(f"Error reading/parsing XML file: {e}")
-        sys.exit(1)
+    with open(xml_path, 'r') as f:
+        xml_content = f.read()
+    
+    # Parse XML to dict with attribute preservation and force lists
+    json_dict = xmltodict.parse(xml_content, attr_prefix='@', force_list={
+        'data:vector',
+        'use-data',
+        'provide-mesh',
+        'receive-mesh',
+        'read-data',
+        'write-data',
+        'mapping:rbf',
+        'watch-point',
+        'exchange'
+    })
+    return json_dict
 
 def load_schema(schema_path):
     """Load JSON schema from file."""
@@ -30,7 +39,7 @@ def validate_config(json_data, schema):
     """Validate JSON data against schema."""
     try:
         jsonschema.validate(instance=json_data, schema=schema)
-        print("Configuration is valid! ✓")
+        print("Configuration is valid! ")
         return True
     except jsonschema.exceptions.ValidationError as e:
         print(f"Validation error: {e.message}")
@@ -60,7 +69,7 @@ def main():
 
     # Convert XML to JSON
     print(f"Converting XML configuration: {args.config_file}")
-    json_data = xml_to_json(args.config_file)
+    json_data = convert_xml_to_json(args.config_file)
 
     # Save JSON if requested
     if args.save_json:
