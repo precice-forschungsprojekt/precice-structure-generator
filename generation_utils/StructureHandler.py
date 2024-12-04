@@ -1,5 +1,5 @@
 from pathlib import Path
-from Logger import Logger
+from .Logger import Logger
 import shutil
 
 class StructureHandler:

@@ -1,4 +1,5 @@
 __pycache__/
 precice_struct/__pycache__
+generation_utils/__pycache__
 venv/
 _generated/

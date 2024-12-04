@@ -1,10 +1,10 @@
 from pathlib import Path
-from StructureHandler import StructureHandler
+from generation_utils.StructureHandler import StructureHandler
 from precice_struct import PS_PreCICEConfig
 import yaml
 from ui_struct.UI_UserInput import UI_UserInput
 from myutils.UT_PCErrorLogging import UT_PCErrorLogging
-from Logger import Logger
+from generation_utils.Logger import Logger
 import shutil
 
 class FileGenerator:
@@ -20,7 +20,7 @@ class FileGenerator:
 
     def generate_precice_config(self) -> None:
         """Generates the precice-config.xml file based on the topology.yaml file."""
-        
+
         # Try to open the yaml file and get the configuration
         try:
             with open(self.input_file, "r") as config_file:
@@ -58,19 +58,19 @@ class FileGenerator:
         try:
             origin_template_README = Path(__file__).parent / "templates" / "template_README.md"
             self.logger.info("Reading in the template file for README.md")
-            
+
             # Check if the template file exists
             if not origin_template_README.exists():
                 raise FileNotFoundError(f"Template file not found: {origin_template_README}")
-            
+
             # Read the template content
             template_content = origin_template_README.read_text(encoding="utf-8")
-            
+
             # Set the target for the README.md
             target = self.structure.README
 
             self.logger.info(f"Writing the template to the target: {str(target)}")
-            
+
             # Write content to the target file
             with open(target, 'w', encoding="utf-8") as README:
                 README.write(template_content)
