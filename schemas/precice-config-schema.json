@@ -143,45 +143,17 @@
           ]
         },
         "coupling-scheme:serial-explicit": {
-          "type": "object",
-          "required": ["time-window-size", "participants", "exchange"],
-          "properties": {
-            "time-window-size": {
-              "type": "object",
-              "required": ["@value"],
-              "properties": {
-                "@value": { "type": "string" }
-              }
-            },
-            "max-time": {
-              "type": "object",
-              "required": ["@value"],
-              "properties": {
-                "@value": { "type": "string" }
-              }
-            },
-            "participants": {
-              "type": "object",
-              "required": ["@first", "@second"],
-              "properties": {
-                "@first": { "type": "string" },
-                "@second": { "type": "string" }
-              }
-            },
-            "exchange": {
+          "oneOf": [
+            {
               "type": "array",
               "items": {
-                "type": "object",
-                "required": ["@data", "@mesh", "@from", "@to"],
-                "properties": {
-                  "@data": { "type": "string" },
-                  "@mesh": { "type": "string" },
-                  "@from": { "type": "string" },
-                  "@to": { "type": "string" }
-                }
+                "$ref": "#/definitions/couplingSchemeItem"
               }
+            },
+            {
+              "$ref": "#/definitions/couplingSchemeItem"
             }
-          }
+          ]
         }
       }
     }
@@ -212,6 +184,48 @@
         "@acceptor": { "type": "string" },
         "@connector": { "type": "string" },
         "@exchange-directory": { "type": "string" }
+      }
+    },
+    "couplingSchemeItem": {
+      "type": "object",
+      "required": ["time-window-size", "participants", "exchange"],
+      "properties": {
+        "time-window-size": {
+          "type": "object",
+          "required": ["@value"],
+          "properties": {
+            "@value": { "type": "string" }
+          }
+        },
+        "max-time": {
+          "type": "object",
+          "required": ["@value"],
+          "properties": {
+            "@value": { "type": "string" }
+          }
+        },
+        "participants": {
+          "type": "object",
+          "required": ["@first", "@second"],
+          "properties": {
+            "@first": { "type": "string" },
+            "@second": { "type": "string" }
+          }
+        },
+        "exchange": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["@data", "@mesh", "@from", "@to"],
+            "properties": {
+              "@data": { "type": "string" },
+              "@mesh": { "type": "string" },
+              "@from": { "type": "string" },
+              "@to": { "type": "string" },
+              "@initialize": { "type": "string" }
+            }
+          }
+        }
       }
     }
   }
