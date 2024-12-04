@@ -1,3 +1,6 @@
 [submodule "controller"]
 	path = controller
 	url = https://github.com/precice/controller
+[submodule "tutorials"]
+	path = tutorials
+	url = https://github.com/precice/tutorials.git
