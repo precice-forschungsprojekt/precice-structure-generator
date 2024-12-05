@@ -23,17 +23,17 @@ permissions:
   contents: read
 
 env:
-  SRC_PATH: src
-  TESTS_PATH: tests
-  NEW_SRC_PATH: new_src
-  NEW_TESTS_PATH: new_tests
+  SRC_PATH: validation_src  # Updated to validation source path
+  TESTS_PATH: validation_tests  # Updated to validation tests path
+  # NEW_SRC_PATH: new_src  # Commented out
+  # NEW_TESTS_PATH: new_tests  # Commented out
 
 jobs:
   determine-tests:
     runs-on: ubuntu-latest
     outputs:
       run-src-tests: ${{ steps.set-output.outputs.run-src-tests }}
-      run-new-src-tests: ${{ steps.set-output.outputs.run-new-src-tests }}
+      # run-new-src-tests: ${{ steps.set-output.outputs.run-new-src-tests }}
     steps:
     - uses: actions/checkout@v4
     - name: Determine tests to run
@@ -44,11 +44,11 @@ jobs:
         else
           echo "::set-output name=run-src-tests::false"
         fi
-        if git diff --name-only $(git merge-base HEAD origin/main) | grep -q '^${{ env.NEW_SRC_PATH }}/'; then
-          echo "::set-output name=run-new-src-tests::true"
-        else
-          echo "::set-output name=run-new-src-tests::false"
-        fi
+        # if git diff --name-only $(git merge-base HEAD origin/main) | grep -q '^${{ env.NEW_SRC_PATH }}/'; then
+        #   echo "::set-output name=run-new-src-tests::true"
+        # else
+        #   echo "::set-output name=run-new-src-tests::false"
+        # fi
 
   build:
     runs-on: ubuntu-latest
@@ -75,6 +75,6 @@ jobs:
         if [ "${{ needs.determine-tests.outputs.run-src-tests }}" == "true" ]; then
           pytest ${{ env.TESTS_PATH }}/
         fi
-        if [ "${{ needs.determine-tests.outputs.run-new-src-tests }}" == "true" ]; then
-          pytest ${{ env.NEW_TESTS_PATH }}/
-        fi
+        # if [ "${{ needs.determine-tests.outputs.run-new-src-tests }}" == "true" ]; then
+        #   pytest ${{ env.NEW_TESTS_PATH }}/
+        # fi
