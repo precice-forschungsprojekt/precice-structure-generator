@@ -124,7 +124,7 @@ class PS_ExplicitCoupling(PS_CouplingScheme):
     """ Explicit coupling scheme """
     def __init__(self):
         self.NrTimeStep = -1
-        self.Dt = 1E-3
+        self.Dt = 1E-4
         pass
 
     def initFromUI(self, ui_config: UI_UserInput, conf):  # conf : PS_PreCICEConfig
@@ -154,7 +154,7 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
         # TODO: define here only implicit coupling specific measures
 
         self.NrTimeStep = -1
-        self.Dt = 1E-3
+        self.Dt = 1E-4
         self.maxIteration = 100
         self.relativeConverganceEps = 1E-4
         self.extrapolation_order = 2
@@ -184,7 +184,7 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
         attr = { "value": str(self.Dt),   "valid-digits": "8"}
         i = etree.SubElement(coupling_scheme, "timestep-length", attr)
         i = etree.SubElement(coupling_scheme, "max-iterations", value=str(self.maxIteration))
-        i = etree.SubElement(coupling_scheme, "extrapolation-order", value=str(self.extrapolation_order))
+        #i = etree.SubElement(coupling_scheme, "extrapolation-order", value=str(self.extrapolation_order))
 
         # write out the exchange and the convergance rate
         self.write_exchange_and_convergance(config, coupling_scheme, str(self.relativeConverganceEps))
@@ -216,7 +216,7 @@ class PS_ImplicitPostPropocessing(object):
         # TODO: make this configurable ?
 
         post_processing = etree.SubElement(tag, "post-processing:"+ self.name)
-        i = etree.SubElement(post_processing, "preconditioner", type=self.precondition_type)
+        #i = etree.SubElement(post_processing, "preconditioner", type=self.precondition_type)
         i = etree.SubElement(post_processing, "filter", type=self.filter_type, limit=str(self.filter_limit))
         i = etree.SubElement(post_processing, "initial-relaxation", value=str(self.initial_relaxation_value))
         i = etree.SubElement(post_processing, "max-used-iterations", value=str(self.max_used_iterations_value))
