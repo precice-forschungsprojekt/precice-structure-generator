@@ -23,8 +23,8 @@ permissions:
   contents: read
 
 env:
-  SRC_PATH: validation_src  # Updated to validation source path
-  TESTS_PATH: validation_tests  # Updated to validation tests path
+  SRC_PATH: validation/validate_all_configs.py validation/validate_config.py  # Updated to specific validation files
+  TESTS_PATH: tests/test_validate_all_configs.py tests/test_validate_config.py  # Updated to specific test files
   # NEW_SRC_PATH: new_src  # Commented out
   # NEW_TESTS_PATH: new_tests  # Commented out
 
