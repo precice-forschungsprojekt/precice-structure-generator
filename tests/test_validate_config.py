@@ -169,3 +169,18 @@ def test_validate_config():
     json_data = {'root': {'element': 'value'}}
     schema = {'type': 'object', 'properties': {'root': {'type': 'object', 'properties': {'element': {'type': 'string'}}}}}
     assert validate_config(json_data, schema) is True
+
+
+def test_broken_precice_config():
+    # Load the broken precice configuration XML file
+    with open(os.path.join(os.path.dirname(__file__), 'broken_precice_config.xml'), 'r') as file:
+        xml_content = file.read()
+    
+    # Convert XML to JSON
+    json_content = convert_xml_to_json(xml_content)
+    
+    # Load the schema
+    schema = load_schema()
+    
+    # Validate the configuration and assert it returns false
+    assert not validate_config(json_content, schema), "The broken config should not validate successfully"
