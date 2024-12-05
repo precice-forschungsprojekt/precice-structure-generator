@@ -1,5 +1,7 @@
 import pytest
-from validation.validate_all_configs import main
+import sys
+sys.path.append('validation')
+from validate_all_configs import main
 
 # Test cases for validate_all_configs.py
 
