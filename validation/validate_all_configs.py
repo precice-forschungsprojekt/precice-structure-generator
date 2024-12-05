@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import sys
 import glob
-from validate_config import load_schema, convert_xml_to_json, validate_config
+from validation.validate_config import load_schema, convert_xml_to_json, validate_config
 
 def find_precice_configs(start_path):
     """Find all preCICE configuration files recursively."""

@@ -91,4 +91,5 @@ def main():
     sys.exit(0 if is_valid else 1)
 
 if __name__ == '__main__':
+    from validation.validate_all_configs import main
     main()
