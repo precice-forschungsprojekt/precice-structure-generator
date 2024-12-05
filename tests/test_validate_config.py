@@ -2,6 +2,7 @@ import pytest
 import sys
 sys.path.append('validation')
 from validate_config import convert_xml_to_json, load_schema, validate_config
+import os
 
 # Test cases for validate_config.py
 
