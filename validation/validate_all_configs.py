@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import sys
 import glob
-from validation.validate_config import load_schema, convert_xml_to_json, validate_config
+from validate_config import load_schema, convert_xml_to_json, validate_config
 
 def find_precice_configs(start_path):
     """Find all preCICE configuration files recursively."""
@@ -17,8 +17,8 @@ def find_precice_configs(start_path):
 
 def main():
     # Get the path to the tutorials directory
-    tutorials_dir = Path(__file__).parent / 'tutorials'
-    schema_path = Path(__file__).parent / 'schemas' / 'precice-config-schema.json'
+    tutorials_dir = Path(__file__).parent.parent / 'tutorials'
+    schema_path = Path(__file__).parent.parent / 'schemas' / 'precice-config-schema.json'
 
     # Load the schema once
     print(f"Loading schema from: {schema_path}")
