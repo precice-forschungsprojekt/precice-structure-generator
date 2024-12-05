@@ -53,7 +53,7 @@ def main():
     parser = argparse.ArgumentParser(description='Validate preCICE XML configuration against schema')
     parser.add_argument('config_file', type=str, help='Path to preCICE XML configuration file')
     parser.add_argument('--schema', type=str, 
-                      default=str(Path(__file__).parent / 'schemas' / 'precice-config-schema.json'),
+                      default=str(Path(__file__).parent.parent / 'schemas' / 'precice-config-schema.json'),
                       help='Path to JSON schema file (default: schemas/precice-config-schema.json)')
     parser.add_argument('--save-json', type=str, help='Save converted JSON to file')
     

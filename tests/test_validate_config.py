@@ -6,11 +6,152 @@ from validate_config import convert_xml_to_json, load_schema, validate_config
 # Test cases for validate_config.py
 
 def test_convert_xml_to_json():
-    # Here you would test the XML to JSON conversion function.
-    # For demonstration, we'll assume it handles a simple XML string correctly.
-    xml_content = "<root><element>value</element></root>"
-    expected_json = {'root': {'element': 'value'}}
-    assert convert_xml_to_json(xml_content) == expected_json
+    # XML content to be tested
+    xml_content = '''<?xml version="1.0" encoding="UTF-8" ?>
+<precice-configuration>
+  <log>
+    <sink
+      filter="%Severity% > debug"
+      format="---[precice] %ColorizedSeverity% %Message%"
+      enabled="true" />
+  </log>
+
+  <data:scalar name="Color" />
+
+  <mesh name="Generator-Mesh" dimensions="2">
+    <use-data name="Color" />
+  </mesh>
+
+  <mesh name="Propagator-Mesh" dimensions="2">
+    <use-data name="Color" />
+  </mesh>
+
+  <participant name="Generator">
+    <provide-mesh name="Generator-Mesh" />
+    <write-data name="Color" mesh="Generator-Mesh" />
+  </participant>
+
+  <participant name="Propagator">
+    <receive-mesh name="Generator-Mesh" from="Generator" />
+    <provide-mesh name="Propagator-Mesh" />
+    <mapping:nearest-neighbor
+      direction="read"
+      from="Generator-Mesh"
+      to="Propagator-Mesh"
+      constraint="consistent" />
+    <read-data name="Color" mesh="Propagator-Mesh" />
+  </participant>
+
+  <m2n:sockets acceptor="Generator" connector="Propagator" exchange-directory=".." />
+
+  <coupling-scheme:serial-explicit>
+    <participants first="Generator" second="Propagator" />
+    <time-window-size value="0.01" />
+    <max-time value="0.3" />
+    <exchange data="Color" mesh="Generator-Mesh" from="Generator" to="Propagator" />
+  </coupling-scheme:serial-explicit>
+</precice-configuration>'''
+
+    # Expected JSON structure
+    expected_json = {
+        'precice-configuration': {
+            'log': {
+                'sink': {
+                    '@filter': '%Severity% > debug',
+                    '@format': '---[precice] %ColorizedSeverity% %Message%',
+                    '@enabled': 'true'
+                }
+            },
+            'data:scalar': {
+                '@name': 'Color'
+            },
+            'mesh': [
+                {
+                    '@name': 'Generator-Mesh',
+                    '@dimensions': '2',
+                    'use-data': [{
+                        '@name': 'Color'
+                    }]
+                },
+                {
+                    '@name': 'Propagator-Mesh',
+                    '@dimensions': '2',
+                    'use-data': [{
+                        '@name': 'Color'
+                    }]
+                }
+            ],
+            'participant': [
+                {
+                    '@name': 'Generator',
+                    'provide-mesh': [{
+                        '@name': 'Generator-Mesh'
+                    }],
+                    'write-data': [{
+                        '@name': 'Color',
+                        '@mesh': 'Generator-Mesh'
+                    }]
+                },
+                {
+                    '@name': 'Propagator',
+                    'receive-mesh': [{
+                        '@name': 'Generator-Mesh',
+                        '@from': 'Generator'
+                    }],
+                    'provide-mesh': [{
+                        '@name': 'Propagator-Mesh'
+                    }],
+                    'mapping:nearest-neighbor': {
+                        '@direction': 'read',
+                        '@from': 'Generator-Mesh',
+                        '@to': 'Propagator-Mesh',
+                        '@constraint': 'consistent'
+                    },
+                    'read-data': [{
+                        '@name': 'Color',
+                        '@mesh': 'Propagator-Mesh'
+                    }]
+                }
+            ],
+            'm2n:sockets': {
+                '@acceptor': 'Generator',
+                '@connector': 'Propagator',
+                '@exchange-directory': '..'
+            },
+            'coupling-scheme:serial-explicit': {
+                'participants': {
+                    '@first': 'Generator',
+                    '@second': 'Propagator'
+                },
+                'time-window-size': {
+                    '@value': '0.01'
+                },
+                'max-time': {
+                    '@value': '0.3'
+                },
+                'exchange': [{
+                    '@data': 'Color',
+                    '@mesh': 'Generator-Mesh',
+                    '@from': 'Generator',
+                    '@to': 'Propagator'
+                }]
+            }
+        }
+    }
+
+    # Use a temporary file to test the function
+    import tempfile
+    import os
+    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+        tmp_file.write(xml_content.encode('utf-8'))
+        tmp_file_path = tmp_file.name
+
+    try:
+        # Test the function with the temporary file path
+        assert convert_xml_to_json(tmp_file_path) == expected_json
+    finally:
+        # Clean up the temporary file
+        os.remove(tmp_file_path)
 
 
 def test_load_schema():
