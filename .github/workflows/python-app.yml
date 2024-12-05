@@ -9,15 +9,15 @@ on:
     paths:
       - "${{ env.SRC_PATH }}/**"
       - "${{ env.TESTS_PATH }}/**"
-      - "${{ env.NEW_SRC_PATH }}/**"
-      - "${{ env.NEW_TESTS_PATH }}/**"
+      #- "${{ env.NEW_SRC_PATH }}/**"
+      #- "${{ env.NEW_TESTS_PATH }}/**"
   pull_request:
     branches: [ "*" ]
     paths:
       - "${{ env.SRC_PATH }}/**"
       - "${{ env.TESTS_PATH }}/**"
-      - "${{ env.NEW_SRC_PATH }}/**"
-      - "${{ env.NEW_TESTS_PATH }}/**"
+      #- "${{ env.NEW_SRC_PATH }}/**"
+      #- "${{ env.NEW_TESTS_PATH }}/**"
   workflow_dispatch:
 
 permissions:
