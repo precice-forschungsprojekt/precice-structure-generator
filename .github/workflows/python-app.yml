@@ -18,6 +18,7 @@ on:
       - "${{ env.TESTS_PATH }}/**"
       - "${{ env.NEW_SRC_PATH }}/**"
       - "${{ env.NEW_TESTS_PATH }}/**"
+  workflow_dispatch:
 
 permissions:
   contents: read
