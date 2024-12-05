@@ -1,15 +1,16 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# This workflow installs Python dependencies, runs tests, and performs linting using flake8.
+# It is triggered on push and pull request events for specific files.
 
 name: Python application
 
 env:
-  SRC_PATH: validation/validate_all_configs.py validation/validate_config.py  # Updated to specific validation files
-  TESTS_PATH: tests/test_validate_all_configs.py tests/test_validate_config.py  # Updated to specific test files
-  # NEW_SRC_PATH: new_src  # Commented out
-  # NEW_TESTS_PATH: new_tests  # Commented out
+  # Paths to source files for validation
+  SRC_PATH: validation/validate_all_configs.py validation/validate_config.py
+  # Paths to test files for validation
+  TESTS_PATH: tests/test_validate_all_configs.py tests/test_validate_config.py
   
 on:
+  # Trigger workflow on push events for specific files
   push:
     branches: [ "*" ]
     paths:
@@ -17,8 +18,7 @@ on:
       - "validation/validate_config.py"
       - "tests/test_validate_all_configs.py"
       - "tests/test_validate_config.py"
-      #- "${{ env.NEW_SRC_PATH }}/**"
-      #- "${{ env.NEW_TESTS_PATH }}/**"
+  # Trigger workflow on pull request events for specific files
   pull_request:
     branches: [ "*" ]
     paths:
@@ -26,22 +26,23 @@ on:
       - "validation/validate_config.py"
       - "tests/test_validate_all_configs.py"
       - "tests/test_validate_config.py"
-      #- "${{ env.NEW_SRC_PATH }}/**"
-      #- "${{ env.NEW_TESTS_PATH }}/**"
+  # Allows manual triggering of the workflow
   workflow_dispatch:
 
+# Grants read access to repository contents
 permissions:
   contents: read
 
-
 jobs:
+  # Job to determine if source tests should run
   determine-tests:
     runs-on: ubuntu-latest
     outputs:
+      # Determines if source tests should run
       run-src-tests: ${{ steps.set-output.outputs.run-src-tests }}
-      # run-new-src-tests: ${{ steps.set-output.outputs.run-new-src-tests }}
     steps:
-    - uses: actions/checkout@v4
+    - # Checks out the repository
+      uses: actions/checkout@v4
     - name: Determine tests to run
       id: set-output
       run: |
@@ -50,20 +51,18 @@ jobs:
         else
           echo "::set-output name=run-src-tests::false"
         fi
-        # if git diff --name-only $(git merge-base HEAD origin/main) | grep -q '^${{ env.NEW_SRC_PATH }}/'; then
-        #   echo "::set-output name=run-new-src-tests::true"
-        # else
-        #   echo "::set-output name=run-new-src-tests::false"
-        # fi
 
+  # Job to build and test the application
   build:
     runs-on: ubuntu-latest
     needs: determine-tests
     steps:
-    - uses: actions/checkout@v4
+    - # Checks out the repository
+      uses: actions/checkout@v4
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
       with:
+        # Specifies Python version
         python-version: "3.10"
     - name: Install dependencies
       run: |
@@ -72,15 +71,13 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
-        # stop the build if there are Python syntax errors or undefined names
+        # Run flake8 linting, excluding the tutorials directory
         flake8 --exclude=tutorials/ . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        # Treat all errors as warnings and set line length limit
         flake8 --exclude=tutorials/ . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
         if [ "${{ needs.determine-tests.outputs.run-src-tests }}" == "true" ]; then
+          # Runs pytest on specified test paths
           pytest ${{ env.TESTS_PATH }}/
         fi
-        # if [ "${{ needs.determine-tests.outputs.run-new-src-tests }}" == "true" ]; then
-        #   pytest ${{ env.NEW_TESTS_PATH }}/
-        # fi
