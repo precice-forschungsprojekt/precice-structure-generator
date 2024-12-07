@@ -1,0 +1,33 @@
+[project]
+name = "precice-structure-generator"
+description = "Generates File and Folder Structure, including all of the necessary files to quickly kickstart a simulation"
+version = "0.0.1"
+
+readme = "README.md"
+license = {text = "TODO"}
+
+requires-python = ">= 3.12"
+dependencies = [
+    "attrs==24.2.0",
+    "colorama==0.4.6",
+    "exceptiongroup==1.2.2",
+    "iniconfig==2.0.0",
+    "jsonschema==4.23.0",
+    "jsonschema-specifications==2024.10.1",
+    "myutils==0.0.21",
+    "packaging==24.2",
+    "pip-check-reqs==2.5.3",
+    "pluggy==1.5.0",
+    "pyaml==24.9.0",
+    "pytest==8.3.4",
+    "PyYAML==6.0.2",
+    "referencing==0.35.1",
+    "rpds-py==0.22.1",
+    "termcolor==2.5.0",
+    "tomli==2.2.1",
+    "xmltodict==0.14.2",
+]
+
+[project.urls]
+Repository = "https://github.com/precice-forschungsprojekt/precice-structure-generator"
+Issues = "https://github.com/precice-forschungsprojekt/precice-structure-generator/issues"
