@@ -62,7 +62,7 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
             if 'min-iteration-convergence-measure' in line:
                 # Extract min-iterations value
                 attributes = get_attributes(line)
-                min_iterations = attributes.get('miniterations', '3')
+                min_iterations = attributes.get('min-iterations', '3')
                 line = f'<min-iterations value="{min_iterations}"/>'
             
             # Mesh tag transformation to add dimensions
