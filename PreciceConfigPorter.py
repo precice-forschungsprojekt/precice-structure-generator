@@ -11,7 +11,7 @@ def port_v2_to_v3(logger, input_file, output_file="./_generated/config/precice-c
 
             new_line = line
             #remove solver-interface line and save attributes
-            if "solver-interface" in line:
+            if "<solver-interface" in line:
                 solver_interface_attributes = get_attributes(line)
                 logger.info(f"Found solver-interface with attributes {solver_interface_attributes}")
                 new_line = ""
