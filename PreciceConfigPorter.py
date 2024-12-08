@@ -31,33 +31,21 @@ def port_v2_to_v3(logger, input_file, output_file="./_generated/config/precice-c
 def port_v2_to_v3_replace(input_string:str,output_string:str,line,logger):
     if input_string in line:
         logger.info(f"Replaced {input_string} with {output_string}")
+        logger.info(line.strip(" "))
         logger.info(f"attributes {get_attributes(line)}")
         return line.replace(input_string, output_string)
     else:
         return line
-#def get_attributes(line):
-    #attributes = {}
-    #for attribute in line.split(' '):
-    #    key, value = attribute.strip().split('=')
-    #    attributes[key.strip()] = value.strip()
-    #return attributes
-    #return line.split(' ')
 
-def parse_attributes(line):
+def get_attributes(line):
     attributes = {}
-    for attribute in line:
+    temp = line.split(' ')
+    for attribute in temp:
         if '=' in attribute:
             key, value = attribute.strip().split('=')
             key = key.strip()
             value = value.strip().strip('">')
             attributes[key] = value
     return attributes
-
-# Example input
-input_line = ['', '', '', '<solver-interface', 'dimensions="3">\n']
-
-# Parse attributes
-parsed_attributes = parse_attributes(input_line)
-print(parsed_attributes)
 
 
