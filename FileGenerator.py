@@ -13,10 +13,11 @@ from PreciceConfigPorter import port_v2_to_v3
 import argparse
 
 class FileGenerator:
-    def __init__(self, file: Path) -> None:
+    def __init__(self, file: Path, version: str) -> None:
         """ Class which takes care of generating the content of the necessary files
             :param file: Input yaml file that is needed for generation of the precice-config.xml file"""
         self.input_file = file
+        self.config_version = version
         self.precice_config = PS_PreCICEConfig()
         self.mylog = UT_PCErrorLogging()
         self.user_ui = UI_UserInput()
@@ -53,9 +54,9 @@ class FileGenerator:
             self.logger.info(f"Writing preCICE config to {target}...")
             self.precice_config.write_precice_xml_config(target, self.mylog)
             # If version 3 is selected, port the config file
-            if hasattr(self, 'config_version') and self.config_version == '3':
+            if self.config_version == '3':
                 self.logger.info("Converting config to version 3 format...")
-                port_v2_to_v3(self.logger, target, target)
+                port_v2_to_v3(self.logger, target)
                 self.logger.info("Config file converted to version 3 format!")
         except Exception as e:
             self.logger.error(f"Failed to write preCICE XML config: {str(e)}")
@@ -116,18 +117,18 @@ if __name__ == "__main__":
         type=Path, 
         required=False, 
         help="Input topology.yaml file",
-        default=Path("controller/examples/1/topology.yaml")
+        default=Path("controller/examples/3/topology.yaml")
     )
     parser.add_argument(
         "-v", "--version",
         type=str,
         choices=['2', '3'],
-        default='2',
+        default='3',
         help="Select preCICE config version (2 or 3, default: 2)"
     )
 
     args = parser.parse_args()
 
-    fileGenerator = FileGenerator(args.file)
+    fileGenerator = FileGenerator(args.file, args.version)
     fileGenerator.generate_precice_config()
     fileGenerator.generate_README()
