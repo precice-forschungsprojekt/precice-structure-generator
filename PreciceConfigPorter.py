@@ -44,16 +44,36 @@ def port_v2_to_v3_replace(input_string: str, output_string: str, line: str, logg
     else:
         return line
 
-def port_v2_to_v3_replace_attribute(input_string: str, attribute: str, output_string: str, line: str, logger) -> str:
-    if input_string in line:
-        logger.info(f"Replaced {input_string} with {output_string}")
-        attributes = get_attributes(line)
-        logger.info(f"attributes {attributes}")
-        key, value = create_key_value_pair(attribute)
-        logger.info(f"attribute key: {key} and value: {value}")
-        if attributes.get(key) == value:
-            logger.info(f"Found attribute {key} with value {value} in attributes")
-            return line.replace(input_string, output_string)
+def port_v2_to_v3_replace_attribute(input_string: str, attribute: str, new_attribute: str, line: str, logger):
+    # If the input_string is not in the line, return the original line
+    if input_string not in line:
+        return line
+    
+    # Parse the attributes
+    attributes = get_attributes(line)
+    logger.info(f"Current attributes: {attributes}")
+    
+    # Extract the key and value from the input attribute
+    key, value = create_key_value_pair(attribute)
+    logger.info(f"Searching for attribute key: {key}, value: {value}")
+    
+    # Check if the attribute exists with the specified value
+    if attributes.get(key) == value:
+        # Remove the original attribute from the line
+        for attr in list(attributes.keys()):
+            if attr != 'name':  # Preserve the name attribute
+                line = re.sub(f'{attr}="[^"]*"', '', line)
+        
+        # Replace the tag name
+        new_line = line.replace(input_string, new_attribute)
+        
+        # Remove extra whitespace
+        new_line = re.sub(r'\s+>', '>', new_line)
+        new_line = re.sub(r'\s{2,}', ' ', new_line)
+        
+        logger.info(f"Replaced '{input_string}' with '{new_attribute}'")
+        return new_line
+    
     return line
 
 def get_attributes(line):
@@ -70,7 +90,3 @@ def create_key_value_pair(attribute_str):
     key = re.sub(r'[^a-zA-Z0-9]', '', key)
     value = re.sub(r'[^a-zA-Z0-9]', '', value)
     return key, value
-
-# Example usage
-# Assuming you have an instance of generation_utils.Logger named `logger`
-# port_v2_to_v3(logger, 'inputfile.xml')
