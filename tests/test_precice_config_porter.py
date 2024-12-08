@@ -2,6 +2,11 @@ import os
 import re
 import pytest
 import tempfile
+import sys
+
+# Add project root to Python path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, project_root)
 
 from PreciceConfigPorter import port_v2_to_v3, XMLTransformer, xml_transform, get_attributes
 
