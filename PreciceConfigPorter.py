@@ -18,8 +18,9 @@ def port_v2_to_v3(logger, input_file, output_file="./_generated/config/precice-c
             with open(output_file,'w') as f:
                 f.write("")
             logger.info(f"Creating output file at default path because it does not exist: ./_generated/config/precice-config-v3.xml")
-        with open(input_file, 'w') as f:
+        with open(output_file, 'w') as f:
             f.writelines(new_lines)
+
         """ Alternative implementation
         # Ensure output directory exists
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
