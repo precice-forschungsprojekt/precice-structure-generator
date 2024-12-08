@@ -53,9 +53,10 @@ def port_v2_to_v3_replace_attribute(input_string:str,attribute:str,output_string
         logger.info(f"Replaced {input_string} with {output_string}")
         attributes = get_attributes(line)
         logger.info(f"attributes {attributes}")
-        logger.info(f"attribute {attribute.split('=')}")
-        if attribute in attributes:
-            logger.info(f"Found attribute {attribute} with value {attributes[attribute]}")
+        key, value = create_key_value_pair(attribute)
+        logger.info(f"attribute key: {key} and value: {value}")
+        if is_key_value_pair_in_list(key, value, attributes):
+            logger.info(f"Found attribute {attribute} with value {value} in attributes")
         return line.replace(input_string, output_string)
     else:
         return line
@@ -76,3 +77,21 @@ def create_key_value_pair(attribute_str):
     key = re.sub(r'[^a-zA-Z0-9]', '', key.strip())
     value = re.sub(r'[^a-zA-Z0-9]', '', value.strip())
     return key, value
+
+
+def is_key_value_pair_in_list(key, value, list_of_dicts):
+    """
+    Check if a key-value pair exists in a list of dictionaries.
+
+    Args:
+        key (str): The key to check.
+        value (str): The value to check.
+        list_of_dicts (list): The list of dictionaries to search.
+
+    Returns:
+        bool: True if the key-value pair is found, False otherwise.
+    """
+    for dictionary in list_of_dicts:
+        if dictionary.get(key) == value:
+            return True
+    return False
