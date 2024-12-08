@@ -1,4 +1,5 @@
 import os
+import re
 
 def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml", output_file="./_generated/config/precice-config-v3.xml"):
     try:
@@ -51,8 +52,9 @@ def port_v2_to_v3_replace_attribute(input_string:str,attribute:str,output_string
     if input_string in line:
         logger.info(f"Replaced {input_string} with {output_string}")
         attributes = get_attributes(line)
-        logger.info(f"attributes {attributes[attribute]}")
         logger.info(f"attributes {attributes}")
+        if attribute in attributes:
+            logger.info(f"Found attribute {attribute} with value {attributes[attribute]}")
         return line.replace(input_string, output_string)
     else:
         return line
@@ -65,7 +67,9 @@ def get_attributes(line):
         if '=' in attribute:
             key, value = attribute.strip().split('=')
             key = key.strip()
+            key = re.sub(r'[^a-zA-Z0-9]', '', key)
             value = value.strip().strip('">')
+            value = re.sub(r'[^a-zA-Z0-9]', '', value)
             attributes[key] = value
     return attributes
 
