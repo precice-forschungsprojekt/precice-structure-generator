@@ -5,9 +5,9 @@ name: Python application
 
 env:
   # Paths to source files for validation
-  SRC_PATH: validation/validate_all_configs.py validation/validate_config.py
+  SRC_PATH: validation/validate_all_configs.py validation/validate_config.py PreciceConfigPorter.py
   # Paths to test files for validation
-  TESTS_PATH: tests/test_validate_all_configs.py tests/test_validate_config.py
+  TESTS_PATH: tests/test_validate_all_configs.py tests/test_validate_config.py tests/test_precice_config_porter.py
   
 on:
   # Trigger workflow on push events for specific files
@@ -16,16 +16,20 @@ on:
     paths:
       - "validation/validate_all_configs.py"
       - "validation/validate_config.py"
+      - "PreciceConfigPorter.py"
       - "tests/test_validate_all_configs.py"
       - "tests/test_validate_config.py"
+      - "tests/test_precice_config_porter.py"
   # Trigger workflow on pull request events for specific files
   pull_request:
     branches: [ "*" ]
     paths:
       - "validation/validate_all_configs.py"
       - "validation/validate_config.py"
+      - "PreciceConfigPorter.py"
       - "tests/test_validate_all_configs.py"
       - "tests/test_validate_config.py"
+      - "tests/test_precice_config_porter.py"
   # Allows manual triggering of the workflow
   workflow_dispatch:
 
