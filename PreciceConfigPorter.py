@@ -5,10 +5,20 @@ def port_v2_to_v3(logger, input_file, output_file="./_generated/config/precice-c
         with open(input_file, 'r') as f:
             lines = f.readlines()
         new_lines = []
+        solver_interface_attributes = []
         for line in lines:
+            #new_line = port_v2_to_v3_replace('solver-interface', 'participant', line, logger)
 
-            new_line = port_v2_to_v3_replace('solver-interface', 'participant', line, logger)
+            new_line = line
+            #remove solver-interface line and save attributes
+            if "solver-interface" in line:
+                solver_interface_attributes = get_attributes(line)
+                logger.info(f"Found solver-interface with attributes {solver_interface_attributes}")
+                new_line = ""
             
+            #Participants
+            new_line = port_v2_to_v3_replace('use-mesh provide="true"', 'provide-mesh', line, logger)
+            new_line = port_v2_to_v3_replace('use-mesh provide="false"', 'receive-mesh', line, logger)
 
             #####
             new_lines.append(new_line)
@@ -31,7 +41,6 @@ def port_v2_to_v3(logger, input_file, output_file="./_generated/config/precice-c
 def port_v2_to_v3_replace(input_string:str,output_string:str,line,logger):
     if input_string in line:
         logger.info(f"Replaced {input_string} with {output_string}")
-        logger.info(line.strip(" "))
         logger.info(f"attributes {get_attributes(line)}")
         return line.replace(input_string, output_string)
     else:
