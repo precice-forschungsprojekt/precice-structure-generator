@@ -86,7 +86,8 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
                 
                 # Add profiling tag with sync-mode if exists
                 if sync_mode:
-                    new_lines.insert(i+1, f'  <profiling sync-mode="{sync_mode}"/>\n')
+                    new_lines.insert(i+1, f'<profiling sync-mode="{sync_mode}"/>\n'.lstrip())
+                    #raise Exception("Profiling tag added")
                 break
         
         if not os.path.isfile(output_file):
