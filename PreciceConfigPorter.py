@@ -67,9 +67,10 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
             
             # Mesh tag transformation to add dimensions
             if '<mesh' in line and dimensions:
-                line = (XMLTransformer(line, logger)
-                        .add_attribute('dimensions', dimensions)
-                        .get_line())
+                # Check if dimensions attribute is already present
+                if 'dimensions=' not in line:
+                    # Insert dimensions attribute before closing '>'
+                    line = line.replace('>', f' dimensions="{dimensions}">')
             
             new_lines.append(line)
         
