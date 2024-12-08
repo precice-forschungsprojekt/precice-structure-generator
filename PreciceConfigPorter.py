@@ -10,9 +10,14 @@ def port_v2_to_v3(logger, input_file, output_file="./_generated/config/precice-c
             new_line = line  # Default to original line if no replacement needed
             if '#include "precice/SolverInterface.hpp"' in line:
                 new_line = line.replace('#include "precice/SolverInterface.hpp"', '#include "precice/precice.hpp"')
-            if 'solver-interface' in line:
-                new_line = line.replace('solver-interface', 'participant')
+            #if 'solver-interface' in line:
+            #    new_line = line.replace('solver-interface', 'participant')
+            new_line = port_v2_to_v3_replace('solver-interface', 'participant', line)
+            #TOD ?? Consider renaming your objects from, e.g., interface to participant, to better reflect the purpose and to be consistent with the rest of the changes
+            #Steering methods
+            
 
+            #####
             new_lines.append(new_line)
         if not(os.path.isfile(output_file)):
             with open(output_file,'w') as f:
@@ -39,3 +44,11 @@ def port_v2_to_v3(logger, input_file, output_file="./_generated/config/precice-c
         logger.error(f"Input Precice v2 file {input_file} not found.")
     except Exception as e:
         logger.error(f"Error converting preCICE config: {str(e)}")
+
+
+
+def port_v2_to_v3_replace(input_string:str,output_string:str,line):
+    if input_string in line:
+        return line.replace(input_string, output_string)
+    else:
+        return line
