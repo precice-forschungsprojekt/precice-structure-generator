@@ -56,7 +56,8 @@ class FileGenerator:
             # If version 3 is selected, port the config file
             if self.config_version == '3':
                 self.logger.info("Converting config to version 3 format...")
-                port_v2_to_v3(self.logger, target)
+                #port_v2_to_v3(self.logger, target)
+                port_v2_to_v3(self.logger)
                 self.logger.info("Config file converted to version 3 format!")
         except Exception as e:
             self.logger.error(f"Failed to write preCICE XML config: {str(e)}")
@@ -117,7 +118,7 @@ if __name__ == "__main__":
         type=Path, 
         required=False, 
         help="Input topology.yaml file",
-        default=Path("controller/examples/3/topology.yaml")
+        default=Path("controller/examples/4/topology.yaml")
     )
     parser.add_argument(
         "-v", "--version",

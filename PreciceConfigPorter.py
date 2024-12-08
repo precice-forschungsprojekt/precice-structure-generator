@@ -1,6 +1,6 @@
 import os
 
-def port_v2_to_v3(logger, input_file, output_file="./_generated/config/precice-config-v3.xml"):
+def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml", output_file="./_generated/config/precice-config-v3.xml"):
     try:
         with open(input_file, 'r') as f:
             lines = f.readlines()
