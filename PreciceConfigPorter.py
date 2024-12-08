@@ -49,6 +49,13 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
             if 'scaled-consistent' in line:
                 line = line.replace('scaled-consistent', 'scaled-consistent-surface')
             
+            # Min-iteration-convergence-measure transformations
+            if 'min-iteration-convergence-measure' in line:
+                # Extract min-iterations value
+                attributes = get_attributes(line)
+                min_iterations = attributes.get('miniterations', '3')
+                line = f'<min-iterations value="{min_iterations}"/>'
+            
             new_lines.append(line)
 
         if not os.path.isfile(output_file):
