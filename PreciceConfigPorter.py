@@ -17,7 +17,7 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
                 solver_interface_attributes = get_attributes(line)
                 logger.info(f"Found solver-interface with attributes {solver_interface_attributes}")
                 # Extract specific attributes
-                sync_mode = solver_interface_attributes.get('syncmode')
+                sync_mode = solver_interface_attributes.get('sync-mode')
                 dimensions = solver_interface_attributes.get('dimensions')
                 line = ""
             if "</solver-interface>" in line:
@@ -79,7 +79,7 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
             if '<precice-configuration' in line:
                 # Add non-specific attributes to precice-configuration
                 for attr, value in solver_interface_attributes.items():
-                    if attr not in ['syncmode', 'dimensions']:
+                    if attr not in ['sync-mode', 'dimensions']:
                         line = (XMLTransformer(line, logger)
                                 .add_attribute(attr, value)
                                 .get_line())
