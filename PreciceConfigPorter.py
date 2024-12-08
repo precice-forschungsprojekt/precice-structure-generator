@@ -19,8 +19,8 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
             
             #Participants
             #new_line = port_v2_to_v3_replace('use-mesh provide="true"', 'provide-mesh', line, logger)
-            new_line = port_v2_to_v3_replace_attribute('use-mesh', 'provide="true"', 'provide-mesh', line, logger)
-            new_line = port_v2_to_v3_replace_attribute('use-mesh', 'provide="false"', 'receive-mesh', line, logger)
+            new_line = port_v2_to_v3_replace_attribute('use-mesh', 'provide="yes"', 'provide-mesh', line, logger)
+            new_line = port_v2_to_v3_replace_attribute('use-mesh', 'provide="no"', 'receive-mesh', line, logger)
 
             #####
             new_lines.append(new_line)
@@ -53,6 +53,7 @@ def port_v2_to_v3_replace_attribute(input_string:str,attribute:str,output_string
         logger.info(f"Replaced {input_string} with {output_string}")
         attributes = get_attributes(line)
         logger.info(f"attributes {attributes}")
+        logger.info(f"attribute {attribute.split('=')}")
         if attribute in attributes:
             logger.info(f"Found attribute {attribute} with value {attributes[attribute]}")
         return line.replace(input_string, output_string)
@@ -74,3 +75,8 @@ def get_attributes(line):
     return attributes
 
 
+def create_key_value_pair(attribute_str):
+    key, value = attribute_str.strip().split('=')
+    key = re.sub(r'[^a-zA-Z0-9]', '', key)
+    value = re.sub(r'[^a-zA-Z0-9]', '', value)
+    return key, value
