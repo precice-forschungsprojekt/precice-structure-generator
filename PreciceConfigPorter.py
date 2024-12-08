@@ -17,8 +17,9 @@ def port_v2_to_v3(logger, input_file, output_file="./_generated/config/precice-c
                 new_line = ""
             
             #Participants
-            new_line = port_v2_to_v3_replace('use-mesh provide="true"', 'provide-mesh', line, logger)
-            new_line = port_v2_to_v3_replace('use-mesh provide="false"', 'receive-mesh', line, logger)
+            #new_line = port_v2_to_v3_replace('use-mesh provide="true"', 'provide-mesh', line, logger)
+            new_line = port_v2_to_v3_replace_attribute('use-mesh', 'provide="true"', 'provide-mesh', line, logger)
+            new_line = port_v2_to_v3_replace_attribute('use-mesh', 'provide="false"', 'receive-mesh', line, logger)
 
             #####
             new_lines.append(new_line)
@@ -45,6 +46,17 @@ def port_v2_to_v3_replace(input_string:str,output_string:str,line,logger):
         return line.replace(input_string, output_string)
     else:
         return line
+
+def port_v2_to_v3_replace_attribute(input_string:str,attribute:str,output_string:str,line,logger):
+    if input_string in line:
+        logger.info(f"Replaced {input_string} with {output_string}")
+        attributes = get_attributes(line)
+        logger.info(f"attributes {attributes[attribute]}")
+        logger.info(f"attributes {attributes}")
+        return line.replace(input_string, output_string)
+    else:
+        return line
+
 
 def get_attributes(line):
     attributes = {}
