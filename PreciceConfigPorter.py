@@ -66,11 +66,7 @@ def get_attributes(line):
     temp = line.split(' ')
     for attribute in temp:
         if '=' in attribute:
-            key, value = attribute.strip().split('=')
-            key = key.strip()
-            key = re.sub(r'[^a-zA-Z0-9]', '', key)
-            value = value.strip().strip('">')
-            value = re.sub(r'[^a-zA-Z0-9]', '', value)
+            key, value = create_key_value_pair(attribute)
             attributes[key] = value
     return attributes
 
@@ -80,9 +76,3 @@ def create_key_value_pair(attribute_str):
     key = re.sub(r'[^a-zA-Z0-9]', '', key.strip())
     value = re.sub(r'[^a-zA-Z0-9]', '', value.strip())
     return key, value
-
-# Example usage
-attribute_str = 'provide="yes"'
-key, value = create_key_value_pair(attribute_str)
-print(f"Key: {key}, Value: {value}")  # Output: Key: provide, Value: yes
-
