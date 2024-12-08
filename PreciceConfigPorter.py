@@ -19,8 +19,7 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
             new_line = port_v2_to_v3_replace_attribute('use-mesh', 'provide="yes"', 'provide-mesh', line, logger)
             new_line = port_v2_to_v3_replace_attribute('use-mesh', 'provide="no"', 'receive-mesh', new_line, logger)
             new_line = port_v2_to_v3_replace_attribute('use-mesh', 'No provide attribute exists', 'receive-mesh', new_line, logger)
-            new_line = port_v2_to_v3_replace_attribute('read-data:', 'waveform-order="1"', 'data:scalar/vector', new_line, logger)
-
+            
 
             new_lines.append(new_line)
         
@@ -57,9 +56,9 @@ def port_v2_to_v3_replace_attribute(input_string: str, attribute: str, new_attri
     
     # Parse the attributes
     attributes = get_attributes(line)
-    #logger.info(f"Current attributes: {attributes}")
+    logger.info(f"Current attributes: {attributes}")
     
-    # Special case for 'No provide attribute exists'
+    # If attribute is a special flag indicating no specific attribute check
     if attribute == 'No provide attribute exists':
         # Simply replace the tag name
         new_line = line.replace(input_string, new_attribute)
@@ -76,17 +75,17 @@ def port_v2_to_v3_replace_attribute(input_string: str, attribute: str, new_attri
     
     # Extract the key and value from the input attribute
     key, value = create_key_value_pair(attribute)
-    #logger.info(f"Searching for attribute key: {key}, value: {value}")
+    logger.info(f"Searching for attribute key: {key}, value: {value}")
     
     # Check if the attribute exists with the specified value
     if attributes.get(key) == value:
-        # Replace the tag name
-        new_line = line.replace(input_string, new_attribute)
+        # Remove the original attribute from the line
+        for attr in list(attributes.keys()):
+            if attr != 'name':  # Preserve the name attribute
+                line = re.sub(f'{attr}="[^"]*"', '', line)
         
-        # Special handling for specific attribute transformations
-        if key == 'waveform-order':
-            # Replace 'waveform-order' with 'waveform-degree'
-            new_line = re.sub(r'waveform-order="([^"]*)"', r'waveform-degree="\1"', new_line)
+        # Replace the tag name and add back the indentation
+        new_line = line.replace(input_string, new_attribute)
         
         # Remove extra whitespace
         new_line = re.sub(r'\s+>', '>', new_line)
