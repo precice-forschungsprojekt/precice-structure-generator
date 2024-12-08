@@ -10,8 +10,8 @@ def port_v2_to_v3(logger, input_file, output_file="./_generated/config/precice-c
             new_line = line  # Default to original line if no replacement needed
             if '#include "precice/SolverInterface.hpp"' in line:
                 new_line = line.replace('#include "precice/SolverInterface.hpp"', '#include "precice/precice.hpp"')
-            if 'precice::SolverInterface' in line:
-                new_line = line.replace('precice::SolverInterface', 'precice::Participant')
+            if 'solver-interface' in line:
+                new_line = line.replace('solver-interface', 'participant')
 
             new_lines.append(new_line)
         if not(os.path.isfile(output_file)):
