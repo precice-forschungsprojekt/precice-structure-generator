@@ -49,6 +49,9 @@ def port_v2_to_v3_replace_attribute(input_string: str, attribute: str, new_attri
     if input_string not in line:
         return line
     
+    # Extract the indentation
+    indentation = line.split('<')[0]
+    
     # Parse the attributes
     attributes = get_attributes(line)
     logger.info(f"Current attributes: {attributes}")
@@ -64,12 +67,15 @@ def port_v2_to_v3_replace_attribute(input_string: str, attribute: str, new_attri
             if attr != 'name':  # Preserve the name attribute
                 line = re.sub(f'{attr}="[^"]*"', '', line)
         
-        # Replace the tag name
+        # Replace the tag name and add back the indentation
         new_line = line.replace(input_string, new_attribute)
         
         # Remove extra whitespace
         new_line = re.sub(r'\s+>', '>', new_line)
         new_line = re.sub(r'\s{2,}', ' ', new_line)
+        
+        # Reattach the original indentation
+        new_line = indentation + new_line.lstrip()
         
         logger.info(f"Replaced '{input_string}' with '{new_attribute}'")
         return new_line
