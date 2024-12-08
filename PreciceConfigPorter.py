@@ -38,8 +38,15 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
                         .replace_attribute('waveform-order', 'waveform-degree')
                         .get_line())
             
+            # M2N attribute transformations
+            if 'm2n:' in line:
+                line = (XMLTransformer(line, logger)
+                        .replace_attribute('from', 'acceptor')
+                        .replace_attribute('to', 'connector')
+                        .get_line())
+            
             new_lines.append(line)
-        
+
         if not os.path.isfile(output_file):
             with open(output_file, 'w') as f:
                 f.write("")
