@@ -9,6 +9,7 @@ sys.path.insert(0, str(( Path(__file__).parent / 'controller' ).resolve()))
 from controller.ui_struct.UI_UserInput import UI_UserInput
 from controller.myutils.UT_PCErrorLogging import UT_PCErrorLogging
 from precice_struct import PS_PreCICEConfig
+from PreciceConfigPorter import port_v2_to_v3
 import argparse
 
 class FileGenerator:
@@ -51,6 +52,11 @@ class FileGenerator:
         try:
             self.logger.info(f"Writing preCICE config to {target}...")
             self.precice_config.write_precice_xml_config(target, self.mylog)
+            # If version 3 is selected, port the config file
+            if hasattr(self, 'config_version') and self.config_version == '3':
+                self.logger.info("Converting config to version 3 format...")
+                port_v2_to_v3(self.logger, target, target)
+                self.logger.info("Config file converted to version 3 format!")
         except Exception as e:
             self.logger.error(f"Failed to write preCICE XML config: {str(e)}")
             return
@@ -112,6 +118,14 @@ if __name__ == "__main__":
         help="Input topology.yaml file",
         default=Path("controller/examples/1/topology.yaml")
     )
+    parser.add_argument(
+        "-v", "--version",
+        type=str,
+        choices=['2', '3'],
+        default='2',
+        help="Select preCICE config version (2 or 3, default: 2)"
+    )
+
     args = parser.parse_args()
 
     fileGenerator = FileGenerator(args.file)
