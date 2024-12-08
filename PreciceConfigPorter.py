@@ -45,6 +45,10 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
                         .replace_attribute('to', 'connector')
                         .get_line())
             
+            # Mapping constraint transformations
+            if 'scaled-consistent' in line:
+                line = line.replace('scaled-consistent', 'scaled-consistent-surface')
+            
             new_lines.append(line)
 
         if not os.path.isfile(output_file):
