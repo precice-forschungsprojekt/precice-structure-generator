@@ -18,6 +18,8 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
             # Participants
             new_line = port_v2_to_v3_replace_attribute('use-mesh', 'provide="yes"', 'provide-mesh', line, logger)
             new_line = port_v2_to_v3_replace_attribute('use-mesh', 'provide="no"', 'receive-mesh', new_line, logger)
+            new_line = port_v2_to_v3_replace_attribute('use-mesh', 'No provide attribute exists', 'receive-mesh', new_line, logger)
+            
 
             new_lines.append(new_line)
         
@@ -55,6 +57,21 @@ def port_v2_to_v3_replace_attribute(input_string: str, attribute: str, new_attri
     # Parse the attributes
     attributes = get_attributes(line)
     logger.info(f"Current attributes: {attributes}")
+    
+    # If attribute is a special flag indicating no specific attribute check
+    if attribute == 'No provide attribute exists':
+        # Simply replace the tag name
+        new_line = line.replace(input_string, new_attribute)
+        
+        # Remove extra whitespace
+        new_line = re.sub(r'\s+>', '>', new_line)
+        new_line = re.sub(r'\s{2,}', ' ', new_line)
+        
+        # Reattach the original indentation
+        new_line = indentation + new_line.lstrip()
+        
+        logger.info(f"Replaced '{input_string}' with '{new_attribute}' without attribute check")
+        return new_line
     
     # Extract the key and value from the input attribute
     key, value = create_key_value_pair(attribute)
