@@ -13,6 +13,8 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
                 solver_interface_attributes = get_attributes(line)
                 logger.info(f"Found solver-interface with attributes {solver_interface_attributes}")
                 line = ""
+            if "</solver-interface>" in line:
+                line = ""
             
             # Participants transformations
             if 'use-mesh' in line:
