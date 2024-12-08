@@ -6,12 +6,19 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
         with open(input_file, 'r') as f:
             lines = f.readlines()
         new_lines = []
-        solver_interface_attributes = []
+        solver_interface_attributes = {}
+        precice_config_attributes = {}
+        sync_mode = None
+        dimensions = None
+        
         for line in lines:
             # Remove solver-interface line and save attributes
             if "<solver-interface" in line:
                 solver_interface_attributes = get_attributes(line)
                 logger.info(f"Found solver-interface with attributes {solver_interface_attributes}")
+                # Extract specific attributes
+                sync_mode = solver_interface_attributes.get('syncmode')
+                dimensions = solver_interface_attributes.get('dimensions')
                 line = ""
             if "</solver-interface>" in line:
                 line = ""
@@ -58,8 +65,29 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
                 min_iterations = attributes.get('miniterations', '3')
                 line = f'<min-iterations value="{min_iterations}"/>'
             
+            # Mesh tag transformation to add dimensions
+            if '<mesh' in line and dimensions:
+                line = (XMLTransformer(line, logger)
+                        .add_attribute('dimensions', dimensions)
+                        .get_line())
+            
             new_lines.append(line)
-
+        
+        # Post-processing: add solver-interface attributes to precice-configuration
+        for i, line in enumerate(new_lines):
+            if '<precice-configuration' in line:
+                # Add non-specific attributes to precice-configuration
+                for attr, value in solver_interface_attributes.items():
+                    if attr not in ['syncmode', 'dimensions']:
+                        line = (XMLTransformer(line, logger)
+                                .add_attribute(attr, value)
+                                .get_line())
+                new_lines[i] = line
+            
+            # Add profiling tag with sync-mode if exists
+            if '<precice-configuration' in line and sync_mode:
+                new_lines.insert(i+1, f'  <profiling sync-mode="{sync_mode}"/>\n')
+        
         if not os.path.isfile(output_file):
             with open(output_file, 'w') as f:
                 f.write("")
