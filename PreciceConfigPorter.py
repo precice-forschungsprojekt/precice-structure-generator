@@ -78,16 +78,16 @@ def port_v2_to_v3(logger, input_file="./controller/examples/4/precice-config.xml
         for i, line in enumerate(new_lines):
             if '<precice-configuration' in line:
                 # Add non-specific attributes to precice-configuration
-                for attr, value in solver_interface_attributes.items():
-                    if attr not in ['sync-mode', 'dimensions']:
-                        line = (XMLTransformer(line, logger)
-                                .add_attribute(attr, value)
-                                .get_line())
-                new_lines[i] = line
-            
-            # Add profiling tag with sync-mode if exists
-            if '<precice-configuration' in line and sync_mode:
-                new_lines.insert(i+1, f'  <profiling sync-mode="{sync_mode}"/>\n')
+                attr_str = ' '.join([f'{attr}="{value}"' for attr, value in solver_interface_attributes.items() 
+                                     if attr not in ['sync-mode', 'dimensions']])
+                if attr_str:
+                    line = f'<precice-configuration {attr_str}>'
+                    new_lines[i] = line
+                
+                # Add profiling tag with sync-mode if exists
+                if sync_mode:
+                    new_lines.insert(i+1, f'  <profiling sync-mode="{sync_mode}"/>\n')
+                break
         
         if not os.path.isfile(output_file):
             with open(output_file, 'w') as f:

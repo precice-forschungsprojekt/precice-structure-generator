@@ -94,12 +94,14 @@ def test_port_v2_to_v3_mesh_dimensions():
 
 def test_port_v2_to_v3_solver_interface_attributes():
     """Test moving solver interface attributes"""
-    input_xml = """<?xml version="1.0"?>
+    input_xml = """<precice-configuration>
+    <?xml version="1.0"?>
     <solver-interface dimensions="2" experimental="true" sync-mode="serial">
         <mesh name="Mesh1">
             <use-data name="Data1"/>
         </mesh>
     </solver-interface>
+    </precice-configuration>
     """
     
     with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.xml') as input_file, \
@@ -115,7 +117,7 @@ def test_port_v2_to_v3_solver_interface_attributes():
         output_content = read_file_content(output_file.name)
         
         # Check precice-configuration attributes
-        assert 'experimental="true"' in output_content
+        assert '<precice-configuration experimental="true"' in output_content
         
         # Check profiling tag
         assert '<profiling sync-mode="serial"/>' in output_content
