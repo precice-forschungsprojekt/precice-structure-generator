@@ -28,6 +28,13 @@ class UI_UserInput(object):
 
         # build the simulation info
         simulation_info = etree["simulation"]
+
+        # Extract additional parameters
+        sync_mode = simulation_info.get("sync-mode", "on")  # Default: "on"
+        mode = simulation_info.get("mode", "fundamental")   # Default: "fundamental"
+        self.sim_info.sync_mode = sync_mode
+        self.sim_info.mode = mode
+
         self.sim_info.init_from_yaml(simulation_info, mylog)
 
         # build all the participants

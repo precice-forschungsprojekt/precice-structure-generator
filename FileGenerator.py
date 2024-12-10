@@ -46,7 +46,10 @@ class FileGenerator:
         target = str(self.structure.precice_config)
         try:
             self.logger.info(f"Writing preCICE config to {target}...")
-            self.precice_config.write_precice_xml_config(target, self.mylog)
+            self.precice_config.write_precice_xml_config(
+            target, self.mylog, sync_mode=self.user_ui.sim_info.sync_mode, mode=self.user_ui.sim_info.mode
+        )
+
         except Exception as e:
             self.logger.error(f"Failed to write preCICE XML config: {str(e)}")
             return

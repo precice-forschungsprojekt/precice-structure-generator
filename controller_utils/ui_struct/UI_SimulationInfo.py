@@ -11,6 +11,8 @@ class UI_SimulationInfo(object):
         self.NrTimeStep = -1
         self.Dt = 1E-3
         self.accuracy = "medium"
+        self.mode = "on"
+        self.sync_mode = "fundamental"
         pass
 
     def init_from_yaml(self, etree, mylog: UT_PCErrorLogging):
@@ -21,6 +23,8 @@ class UI_SimulationInfo(object):
             self.NrTimeStep = etree["timesteps"]
             self.Dt = etree["timestep-length"]
             self.accuracy = etree["accuracy"]
+            self.sync_mode = etree.get("synchronize", "on")
+            self.mode = etree.get("mode", "fundamental")
         except:
             mylog.rep_error("Error in YAML initialization of the Simulator info.")
         pass
