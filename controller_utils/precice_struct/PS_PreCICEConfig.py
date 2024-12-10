@@ -247,7 +247,7 @@ class PS_PreCICEConfig(object):
                             if solvers_mesh_name != q.source_mesh_name and \
                                             q.source_mesh_name not in used_meshes:
                                 solver_mesh_tag = etree.SubElement(solver_tag,
-                                                                   "recive-mesh", name=q.source_mesh_name,
+                                                                   "receive-mesh", name=q.source_mesh_name,
                                                                    from___=q.source_solver.name)
                                 used_meshes[q.source_mesh_name] = 1
                                 pass
