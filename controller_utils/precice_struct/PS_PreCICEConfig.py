@@ -178,10 +178,6 @@ class PS_PreCICEConfig(object):
             dimensionality = max ( dimensionality, solver.dimensionality )
             pass
 
-        # TODO: do we always have interface coupling???
-        solver_interface_tag = etree.SubElement(precice_configuration_tag, "solver-interface",
-                                                dimensions=str(dimensionality))
-
         # 1 quantities
         for coupling_quantities_name in self.coupling_quantities:
             coupling_quantity = self.coupling_quantities[coupling_quantities_name]
@@ -189,14 +185,14 @@ class PS_PreCICEConfig(object):
             if coupling_quantity.dim > 1:
                 mystr = "vector"
                 pass
-            data_tag = etree.SubElement(solver_interface_tag, etree.QName("data:"+mystr),
+            data_tag = etree.SubElement(precice_configuration_tag, etree.QName("data:"+mystr),
                                         name=coupling_quantity.instance_name)
             pass
 
         # 2 meshes
         for mesh_name in self.meshes:
             mesh = self.meshes[mesh_name]
-            mesh_tag = etree.SubElement(solver_interface_tag, "mesh", name=mesh.name)
+            mesh_tag = etree.SubElement(precice_configuration_tag, "mesh", name=mesh.name, dimensions=str(dimensionality))
             for quantities_name in mesh.quantities:
                 quant = mesh.quantities[quantities_name]
                 quant_tag = etree.SubElement(mesh_tag, "user-data", name=quant.instance_name)
@@ -204,7 +200,7 @@ class PS_PreCICEConfig(object):
         # 3 participants
         for solver_name in self.solvers:
             solver = self.solvers[solver_name]
-            solver_tag = etree.SubElement(solver_interface_tag,
+            solver_tag = etree.SubElement(precice_configuration_tag,
                                           "participant", name=solver.name)
 
             # there are more then one meshes per participant
@@ -288,13 +284,13 @@ class PS_PreCICEConfig(object):
                 for other_solver_name in list_of_solvers_with_higher_complexity:
                     other_solver = list_of_solvers_with_higher_complexity[other_solver_name]
                     # we also add the M2N construct that is mandatory for the configuration
-                    m2n_tag = etree.SubElement( solver_interface_tag, "m2n:sockets", connecotr = other_solver_name,
+                    m2n_tag = etree.SubElement( precice_configuration_tag, "m2n:sockets", connecotr = other_solver_name,
                                                 acceptor = solver_name, exchange___directory = "../")
                 pass
 
         # 4 coupling scheme
         # TODO: later this migh be more complex !!!
-        self.couplingScheme.write_precice_xml_config(solver_interface_tag, self)
+        self.couplingScheme.write_precice_xml_config(precice_configuration_tag, self)
 
         # =========== generate XML ===========================
 
