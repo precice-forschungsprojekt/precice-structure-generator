@@ -14,26 +14,14 @@ def format_precice_config(input_file, output_file=None):
     with open(input_file, 'r', encoding='utf-8') as f:
         content = f.read()
     
-    # Predefined tag order for better readability
-    tag_order = [
-        'log', 
-        'data:vector', 
-        'mesh', 
-        'participant', 
-        'm2n:sockets', 
-        'coupling-scheme:parallel-implicit'
-    ]
-    
     # Split the content into lines
     lines = content.split('\n')
     
-    # Group lines by their tag type
-    tag_groups = {}
-    current_group = []
-    current_tag = None
+    # Formatted lines to store the result
+    formatted_lines = [lines[0]]  # XML declaration
     
-    # Separate XML declaration and first line
-    formatted_lines = [lines[0]]
+    # Track the current main tag group
+    current_main_group = None
     
     # Process remaining lines
     for line in lines[1:]:
@@ -46,20 +34,25 @@ def format_precice_config(input_file, output_file=None):
             if tag_match:
                 tag = tag_match.group(1).split(':')[-1]
                 
-                # If tag changes, add previous group with newline
-                if current_tag and tag != current_tag:
-                    formatted_lines.extend(current_group)
-                    formatted_lines.append('')  # Add empty line between tag groups
-                    current_group = []
+                # Predefined main groups
+                main_groups = [
+                    'log', 
+                    'data:vector', 
+                    'mesh', 
+                    'participant', 
+                    'm2n:sockets', 
+                    'coupling-scheme:parallel-implicit'
+                ]
                 
-                current_tag = tag
+                # Check if this is a new main group
+                if tag in main_groups and tag != current_main_group:
+                    # Add a newline before the new main group, but only if we're not at the start
+                    if len(formatted_lines) > 1:
+                        formatted_lines.append('')
+                    current_main_group = tag
         
-        # Collect lines for current group
-        current_group.append(line)
-    
-    # Add last group
-    if current_group:
-        formatted_lines.extend(current_group)
+        # Add the line
+        formatted_lines.append(line)
     
     # Combine lines
     formatted_content = '\n'.join(formatted_lines)
