@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding='UTF-8'?>
+
+<precice-configuration>
+
+   <solver-interface dimensions="3">
+      <data:vector name="Forces0"/>
+
+      <mesh name="SU2_Mesh0">
+         <use-data name="Forces0"/>
+      </mesh>
+
+      <mesh name="Calculix_Mesh">
+         <use-data name="Forces0"/>
+      </mesh>
+
+      <participant name="SU2">
+         <use-mesh name="Calculix_Mesh" from="CCX"/>
+         <use-mesh name="SU2_Mesh0" provide="yes"/>
+         <write-data name="Forces0" mesh="SU2_Mesh0"/>
+         <mapping:nearest-neighbor
+            direction="write" from="SU2_Mesh0" to="Calculix_Mesh"
+            constraint="conservative" timing="initial"/>
+      </participant>
+
+      <participant name="CCX">
+         <use-mesh name="Calculix_Mesh" provide="yes"/>
+         <read-data name="Forces0"      mesh="Calculix_Mesh"/>
+      </participant>
+
+      <m2n:sockets from="SU2" to="CCX"  exchange-directory="../" />
+      
+      <coupling-scheme:parallel-explicit>
+           <participants first="SU2" second="CCX"/>
+           <max-timesteps value="20"/>
+           <timestep-length value="1e-3" />
+           <exchange data="Forces0" mesh="Calculix_Mesh" from="SU2" to="CCX"/>
+      </coupling-scheme:parallel-explicit>
+
+   </solver-interface>
+
+</precice-configuration>

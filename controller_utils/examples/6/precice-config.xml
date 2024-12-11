@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<precice-configuration>
+
+   <solver-interface dimensions="2">   
+      <data:vector name="Forces1"/>
+      <data:vector name="Displacements1"/> 
+      <data:vector name="Forces2"/>
+      <data:vector name="Displacements2"/> 
+   
+      <mesh name="NASTIN1_Mesh">
+         <use-data name="Displacements1"/>
+         <use-data name="Forces1"/>
+      </mesh>
+
+      <mesh name="NASTIN2_Mesh">
+         <use-data name="Displacements2"/>
+         <use-data name="Forces2"/>
+      </mesh>
+
+      <mesh name="SOLIDZ_Mesh1">
+         <use-data name="Displacements1"/>
+         <use-data name="Forces1"/>
+      </mesh>
+
+      <mesh name="SOLIDZ_Mesh2">
+         <use-data name="Displacements2"/>
+         <use-data name="Forces2"/>
+      </mesh>
+
+      <participant name="NASTIN1">
+         <use-mesh name="SOLIDZ_Mesh1" from="SOLIDZ"/>
+         <use-mesh name="NASTIN1_Mesh" provide="yes"/>
+         <write-data name="Forces1" mesh="NASTIN1_Mesh"/>
+         <read-data name="Displacements1" mesh="NASTIN1_Mesh"/>
+         <mapping:nearest-neighbor direction="write" from="NASTIN1_Mesh" to="SOLIDZ_Mesh1" constraint="conservative" timing="initial"/>
+         <mapping:nearest-neighbor direction="read" from="SOLIDZ_Mesh1" to="NASTIN1_Mesh" constraint="consistent" timing="initial"/>
+      </participant>
+
+      <participant name="NASTIN2">
+         <use-mesh name="SOLIDZ_Mesh2" from="SOLIDZ"/>
+         <use-mesh name="NASTIN2_Mesh" provide="yes"/>
+         <write-data name="Forces2" mesh="NASTIN2_Mesh"/>
+         <read-data name="Displacements2" mesh="NASTIN2_Mesh"/>
+         <mapping:nearest-neighbor direction="write" from="NASTIN2_Mesh" to="SOLIDZ_Mesh2" constraint="conservative" timing="initial"/>
+         <mapping:nearest-neighbor direction="read" from="SOLIDZ_Mesh2" to="NASTIN2_Mesh" constraint="consistent" timing="initial"/>
+      </participant>
+      
+      <participant name="SOLIDZ">
+	     <use-mesh name="SOLIDZ_Mesh1" provide="yes"/>
+         <write-data name="Displacements1" mesh="SOLIDZ_Mesh1"/>
+         <read-data name="Forces1" mesh="SOLIDZ_Mesh1"/>
+	     <use-mesh name="SOLIDZ_Mesh2" provide="yes"/>
+         <write-data name="Displacements2" mesh="SOLIDZ_Mesh2"/>
+         <read-data name="Forces2" mesh="SOLIDZ_Mesh2"/>
+      </participant>
+      
+      <m2n:mpi from="NASTIN2" to="SOLIDZ" exchange-directory="../" />
+      <m2n:mpi from="NASTIN1" to="SOLIDZ" exchange-directory="../" />
+      
+      <coupling-scheme:multi>
+         <participant name="NASTIN1"/>
+         <participant name="NASTIN2"/>
+         <participant name="SOLIDZ" control="yes"/>
+         <max-timesteps value="200"/>
+         <timestep-length value="1e-3" /> 
+ 	     <exchange data="Forces1" mesh="SOLIDZ_Mesh1" from="NASTIN1" to="SOLIDZ"/> 
+         <exchange data="Displacements1" mesh="SOLIDZ_Mesh1" from="SOLIDZ" to="NASTIN1"/>
+ 	     <exchange data="Forces2" mesh="SOLIDZ_Mesh2" from="NASTIN2" to="SOLIDZ"/> 
+         <exchange data="Displacements2" mesh="SOLIDZ_Mesh2" from="SOLIDZ" to="NASTIN2"/>
+         <max-iterations value="30"/>
+         <relative-convergence-measure limit="1e-4" data="Displacements1" mesh="SOLIDZ_Mesh1"/>
+         <relative-convergence-measure limit="1e-4" data="Forces1" mesh="SOLIDZ_Mesh1"/>
+         <relative-convergence-measure limit="1e-4" data="Displacements2" mesh="SOLIDZ_Mesh2"/>
+         <relative-convergence-measure limit="1e-4" data="Forces2" mesh="SOLIDZ_Mesh2"/>
+         <extrapolation-order value="0"/>
+         <post-processing:IQN-ILS>
+            <data name="Displacements1" mesh="SOLIDZ_Mesh1"/>
+            <data name="Forces1" mesh="SOLIDZ_Mesh1"/>
+            <data name="Displacements2" mesh="SOLIDZ_Mesh2"/>
+            <data name="Forces2" mesh="SOLIDZ_Mesh2"/>
+            <preconditioner type="residual-sum"/>
+            <filter type="QR1" limit="1e-6"/>
+            <initial-relaxation value="0.1"/>
+            <max-used-iterations value="100"/>
+            <timesteps-reused value="20"/>
+     </post-processing:IQN-ILS>
+   </coupling-scheme:multi>
+</solver-interface>
+</precice-configuration>

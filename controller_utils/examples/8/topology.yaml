@@ -1,0 +1,24 @@
+simulation:
+
+    timesteps: 20
+    timestep-length: 1e-2
+    steady-state: False
+    accuracy: medium
+
+participants:
+    Fluid:
+        solver: OpenFOAM
+        solver-type: BoussinesqPIMPLEFOAM
+
+    Solid:
+        solver: OpenFOAM
+        solver-type: LaplacianFOAM
+
+couplings:
+    - cht:
+        fluid:
+            name: Fluid
+            interface: interface
+        structure:
+            name: Solid
+            interface: interface

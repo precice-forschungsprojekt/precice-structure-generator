@@ -1,0 +1,46 @@
+simulation:
+
+    timesteps: 200
+    timestep-length: 1e-3
+    steady-state: False
+    accuracy: medium
+
+participants:
+    NASTIN1:
+        solver: Alya
+        solver-type: Nastin
+
+    NASTIN2:
+        solver: Alya
+        solver-type: Nastin
+
+    SOLIDZ1:
+        solver: Alya
+        solver-type: Solidz
+
+    SOLIDZ2:
+        solver: Alya
+        solver-type: Solidz
+
+couplings:
+    - fsi:
+        fluid:
+            name: NASTIN1
+            interface: 20
+        structure:
+            name: SOLIDZ1
+            interface: 24
+    - fsi:
+        fluid:
+            name: NASTIN2
+            interface: 20
+        structure:
+            name: SOLIDZ1
+            interface: 25
+    - fsi:
+        fluid:
+            name: NASTIN2
+            interface: 21
+        structure:
+            name: SOLIDZ2
+            interface: 25

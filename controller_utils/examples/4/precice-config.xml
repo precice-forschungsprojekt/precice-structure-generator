@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<precice-configuration>
+
+   
+   <solver-interface dimensions="2">   
+      <data:vector name="Forces"/>
+      <data:vector name="Displacements"/> 
+   
+      <mesh name="NASTIN_Mesh">
+         <use-data name="Displacements"/>
+         <use-data name="Forces"/>
+      </mesh>
+
+      <mesh name="SOLIDZ_Mesh">
+         <use-data name="Displacements"/>
+         <use-data name="Forces"/>
+      </mesh>
+
+      <participant name="NASTIN">
+         <use-mesh name="SOLIDZ_Mesh" from="SOLIDZ"/>
+         <use-mesh name="NASTIN_Mesh" provide="yes"/>
+         <write-data name="Forces" mesh="NASTIN_Mesh"/>
+         <read-data name="Displacements" mesh="NASTIN_Mesh"/>
+         <mapping:nearest-neighbor direction="write" from="NASTIN_Mesh" to="SOLIDZ_Mesh" constraint="conservative" timing="initial"/>
+         <mapping:nearest-neighbor direction="read" from="SOLIDZ_Mesh" to="NASTIN_Mesh" constraint="consistent" timing="initial"/>
+      </participant>
+      
+      <participant name="SOLIDZ">
+	 <use-mesh name="SOLIDZ_Mesh" provide="yes"/>
+         <write-data name="Displacements" mesh="SOLIDZ_Mesh"/>
+         <read-data name="Forces" mesh="SOLIDZ_Mesh"/>
+     </participant>
+      
+      <m2n:sockets from="NASTIN" to="SOLIDZ" exchange-directory="../"/>
+      
+      <coupling-scheme:parallel-implicit>
+         <participants first="NASTIN" second="SOLIDZ"/>
+         <max-timesteps value="20"/>
+         <timestep-length value="1e-3"/> 
+         <exchange data="Forces" mesh="SOLIDZ_Mesh" from="NASTIN" to="SOLIDZ"/> 
+         <exchange data="Displacements" mesh="SOLIDZ_Mesh" from="SOLIDZ" to="NASTIN"/>
+         <max-iterations value="30"/>
+         <relative-convergence-measure limit="1e-4" data="Displacements" mesh="SOLIDZ_Mesh"/>
+         <relative-convergence-measure limit="1e-4" data="Forces" mesh="SOLIDZ_Mesh"/>
+         <post-processing:IQN-ILS>
+            <data name="Displacements" mesh="SOLIDZ_Mesh"/>
+            <data name="Forces" mesh="SOLIDZ_Mesh"/>
+            <preconditioner type="residual-sum"/>
+            <filter type="QR1" limit="1e-6"/>
+            <initial-relaxation value="0.1"/>
+            <max-used-iterations value="30"/>
+            <timesteps-reused value="2"/>
+         </post-processing:IQN-ILS>
+   </coupling-scheme:parallel-implicit>
+</solver-interface>
+</precice-configuration>
