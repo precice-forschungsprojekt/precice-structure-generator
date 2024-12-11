@@ -36,12 +36,13 @@ def format_precice_config(input_file, output_file=None):
                 
                 # Predefined main groups
                 main_groups = [
-                    'log', 
-                    'data:vector', 
+                    'log',
+                    'profiling' 
+                    'data', 
                     'mesh', 
                     'participant', 
-                    'm2n:sockets', 
-                    'coupling-scheme:parallel-implicit'
+                    'm2n', 
+                    'coupling-scheme'
                 ]
                 
                 # Check if this is a new main group
