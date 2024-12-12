@@ -8,15 +8,16 @@ from controller_utils.precice_struct import PS_PreCICEConfig
 import argparse
 
 class FileGenerator:
-    def __init__(self, file: Path) -> None:
+    def __init__(self, input_file: Path, output_path: Path) -> None:
         """ Class which takes care of generating the content of the necessary files
-            :param file: Input yaml file that is needed for generation of the precice-config.xml file"""
-        self.input_file = file
+            :param input_file: Input yaml file that is needed for generation of the precice-config.xml file
+            :param output_path: Path to the folder where the _generated/ folder will be placed"""
+        self.input_file = input_file
         self.precice_config = PS_PreCICEConfig()
         self.mylog = UT_PCErrorLogging()
         self.user_ui = UI_UserInput()
         self.logger = Logger()
-        self.structure = StructureHandler()
+        self.structure = StructureHandler(output_path)
 
     def generate_precice_config(self) -> None:
         """Generates the precice-config.xml file based on the topology.yaml file."""
@@ -105,14 +106,22 @@ class FileGenerator:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Takes topology.yaml files as input and writes out needed files to start the precice.")
     parser.add_argument(
-        "-f", "--file", 
+        "-f", "--input-file", 
         type=Path, 
         required=False, 
         help="Input topology.yaml file",
         default=Path("controller_utils/examples/1/topology.yaml")
     )
+    parser.add_argument(
+        "-o", "--output-path",
+        type=Path,
+        required=False,
+        help="Output path for the generated folder.",
+        default=Path(__file__).parent
+    )
+
     args = parser.parse_args()
 
-    fileGenerator = FileGenerator(args.file)
+    fileGenerator = FileGenerator(args.input_file, args.output_path)
     fileGenerator.generate_precice_config()
     fileGenerator.generate_README()
