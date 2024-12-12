@@ -270,9 +270,6 @@ class PS_PreCICEConfig(object):
 
                 # do the mesh mapping on the more "complex" side of the computations, to avoid data intensive traffic
                 # for each mesh we look if the belonging solver has higher complexity
-                
-                basis_function = "exmple"
-                parameters = "example"
 
                 # READS
                 for other_solver_name in list_of_solvers_with_higher_complexity_read:
