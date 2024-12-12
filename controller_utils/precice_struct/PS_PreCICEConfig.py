@@ -270,24 +270,27 @@ class PS_PreCICEConfig(object):
 
                 # do the mesh mapping on the more "complex" side of the computations, to avoid data intensive traffic
                 # for each mesh we look if the belonging solver has higher complexity
+                
+                basis_function = "exmple"
+                parameters = "example"
 
                 # READS
                 for other_solver_name in list_of_solvers_with_higher_complexity_read:
                     other_solver = list_of_solvers_with_higher_complexity_read[other_solver_name]
                     mapping_string = type_of_the_mapping_read[other_solver_name]
                     other_solver_mesh_name = self.get_mesh_name_by_participants(other_solver_name, solver_name)
-                    mapped_tag = etree.SubElement(solver_tag, "mapping:nearest-neighbor", direction = "read",
-                                                  from_ = other_solver_mesh_name, to= solvers_mesh_name,
-                                                  constraint = mapping_string)
+                    mapped_tag = etree.SubElement(solver_tag, "mapping:rbf-global-direct", direction="read", from_=other_solver_mesh_name,
+                                                  to= solvers_mesh_name, constraint=mapping_string)
+                    basis_function_tag = etree.SubElement(mapped_tag, "basis-function:nearest-neighbour")
                     pass
                 # WRITES
                 for other_solver_name in list_of_solvers_with_higher_complexity_write:
                     other_solver = list_of_solvers_with_higher_complexity_write[other_solver_name]
                     mapping_string = type_of_the_mapping_write[other_solver_name]
                     other_solver_mesh_name = self.get_mesh_name_by_participants(other_solver_name, solver_name)
-                    mapped_tag = etree.SubElement(solver_tag, "mapping:nearest-neighbor", direction="write",
-                                              from___ = solvers_mesh_name, to = other_solver_mesh_name,
-                                              constraint = mapping_string)
+                    mapped_tag = etree.SubElement(solver_tag, "mapping:rbf-global-direct", direction="write", from_=other_solver_mesh_name,
+                                                  to= solvers_mesh_name, constraint=mapping_string)
+                    basis_function_tag = etree.SubElement(mapped_tag, "basis-function:nearest-neighbour")
                     pass
                 # treat M2N communications with other solver
                 for other_solver_name in list_of_solvers_with_higher_complexity:
@@ -317,7 +320,10 @@ class PS_PreCICEConfig(object):
         for a,b in replace_only_list:
             xml_string = xml_string.replace(a, b)
         replace_list = [("data:", "data___"), ("mapping:nearest", "mapping___nearest"), ("m2n:", "m2n___" ),
-                        ("coupling-scheme:","coupling-scheme___"), ("post-processing:", "post-processing___")]
+                        ("coupling-scheme:","coupling-scheme___"), ("post-processing:", "post-processing___"),
+                        ("mapping:rbf-global-direct", "mapping___rbf-global-direct"),
+                        ("basis-function:nearest-neighbour", "basis-function___nearest-neighbour")
+]
         for a,b in replace_list:
             xml_string = xml_string.replace(a, b)
 
