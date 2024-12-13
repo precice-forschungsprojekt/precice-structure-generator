@@ -1,29 +1,5 @@
 import pytest
 
-def test_no_solver_interface_tags(generated_config):
-    """Verify no <solver-interface> tags remain in the configuration"""
-    assert '<solver-interface' not in generated_config, "Solver interface tags should be removed"
-    assert '</solver-interface>' not in generated_config, "Solver interface closing tags should be removed"
-
-def test_no_deprecated_m2n_attributes(generated_config):
-    """Verify m2n attributes 'from' and 'to' are replaced"""
-    if 'm2n:' in generated_config:
-        assert 'from=' not in generated_config, "Deprecated 'm2n:from' attribute should be replaced"
-        assert 'to=' not in generated_config, "Deprecated 'm2n:to' attribute should be replaced"
-
-def test_no_deprecated_use_mesh_attributes(generated_config):
-    """Verify 'provide' attribute in use-mesh is replaced"""
-    assert 'use-mesh provide=' not in generated_config, "Deprecated 'use-mesh provide' should be replaced"
-    assert '<use-mesh' not in generated_config, "Use-mesh tags should be replaced with provide-mesh/receive-mesh"
-
-
-
-
-def test_no_extrapolation_order(generated_config):
-    """Verify extrapolation order is removed"""
-    assert '<extrapolation-order' not in generated_config, "Extrapolation order should be removed"
-
-
 @pytest.fixture
 def generated_config():
     """Fixture to load the generated configuration file"""
@@ -41,7 +17,24 @@ def generated_config():
     with open(config_path, 'r') as f:
         return f.read()
 
-
+def test_configuration(generated_config):
+    """Verify various deprecated tags and attributes are removed or replaced"""
+    for line in generated_config.splitlines():
+        # Test for solver interface tags
+        assert '<solver-interface' not in line, "Solver interface tags should be removed"
+        assert '</solver-interface>' not in line, "Solver interface closing tags should be removed"
+        
+        # Test for deprecated m2n attributes
+        if 'm2n' in line:
+            assert 'from=' not in line, "Deprecated 'm2n:from' attribute should be replaced"
+            assert 'to=' not in line, "Deprecated 'm2n:to' attribute should be replaced"
+        
+        # Test for deprecated use-mesh attributes
+        assert 'use-mesh provide=' not in line, "Deprecated 'use-mesh provide' should be replaced"
+        assert '<use-mesh' not in line, "Use-mesh tags should be replaced with provide-mesh/receive-mesh"
+        
+        # Test for extrapolation order
+        assert '<extrapolation-order' not in line, "Extrapolation order should be removed"
 
 # Add this at the end of the file
 if __name__ == "__main__":
