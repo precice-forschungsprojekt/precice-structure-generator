@@ -26,12 +26,18 @@ git clone https://github.com/your-organization/precice-structure-generator.git
 cd precice-structure-generator
 ```
 
+2. Execute the setup script for your system inside the setup_scripts directory:
+```bash
+./setup_scripts/install_dependencies.sh
+#or
+./setup_scripts/install_dependencies.ps1
+```
+If you like to do it manually:
 2. Create and activate a virtual environment (recommended):
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
 ```
-
 3. Install dependencies:
 ```bash
 pip install -r requirements.txt
@@ -55,25 +61,60 @@ python FileGenerator.py -f path/to/your/topology.yaml
 
 ## Dependencies
 
+- attrs==24.2.0
+- colorama==0.4.6
+- exceptiongroup==1.2.2
+- iniconfig==2.0.0
+- jsonschema==4.23.0
+- jsonschema-specifications==2024.10.1
+- lxml==5.3.0
 - myutils==0.0.21
+- packaging==24.2
+- pip-check-reqs==2.5.3
+- pluggy==1.5.0
 - pyaml==24.9.0
+- pytest==8.3.4
 - PyYAML==6.0.2
+- referencing==0.35.1
+- rpds-py==0.22.1
 - termcolor==2.5.0
+- tomli==2.2.1
+- xmltodict==0.14.2
+
 
 ## Project Structure
 
 ```
 precice-structure-generator/
 │
-├── FileGenerator.py         # Main script for configuration generation
-├── requirements.txt         # Project dependencies
-├── _generated/              # Output directory for generated files
-├── controller/              # Controller modules
-│   ├── ui_struct/           # User interface handling
-│   ├── myutils/             # Utility modules
-│   └── precice_struct/      # preCICE configuration modules
-├── generation_utils/        # Utility modules for file generation
-└── README.md                # Project documentation
+├── .github/                   # GitHub-specific configurations
+├── .git/                      # Git version control directory
+│
+├── controller_utils/          # Utility controllers
+│   ├── examples/
+│   ├── myutils/               # Miscellaneous utilities
+│   ├── precice_struct/        # preCICE configuration structures
+│   └── ui_struct/             # User interface utilities
+│
+├── generation_utils/          # Core generation utilities
+│   ├── AdapterConfigGenerator.py
+│   ├── Logger.py
+│   └── StructureHandler.py
+│
+├── schemas/                   # JSON/validation schemas
+├── setup_scripts/             # Setup and initialization scripts
+├── templates/                 # Configuration templates
+├── tests/                     # Project test suite
+├── tutorials/                 # Extensive tutorials (1135 items!) (from original preCICE)
+├── validation/                # Validation modules
+│
+├── _generated/                # Generated configuration files
+│
+├── FileGenerator.py           # Main file generation script
+├── README.md                  # Project documentation (This file)
+├── requirements.txt           # Project dependencies
+├── pyproject.toml             # Project configuration
+└── .gitignore                 # Git ignore file
 ```
 
 ## Logging and Error Handling
