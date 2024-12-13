@@ -2,7 +2,6 @@ from pathlib import Path
 from generation_utils.Logger import Logger
 from lxml import etree
 import json
-import re
 
 class AdapterConfigGenerator:
     def __init__(self, adapter_config_path: Path, precice_config_path: Path, target_participant: str) -> None:
@@ -76,9 +75,9 @@ class AdapterConfigGenerator:
         self._get_generated_precice_config()
 
         participant_elem = None
-        for p in self.root.findall(".//participant"):
-            if p.get("name") == self.target_participant:
-                participant_elem = p
+        for participiant in self.root.findall(".//participant"):
+            if participiant.get("name") == self.target_participant:
+                participant_elem = participiant
                 break
 
         if participant_elem is None:
