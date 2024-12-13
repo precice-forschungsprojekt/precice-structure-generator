@@ -96,7 +96,7 @@ precice-structure-generator/
 ├── .github/                   # GitHub-specific configurations
 ├── .git/                      # Git version control directory
 │
-├── controller_utils/          # Utility controllers
+├── controller_utils/          # Utility from controller
 │   ├── examples/
 │   ├── myutils/               # Miscellaneous utilities
 │   ├── precice_struct/        # preCICE configuration structures
