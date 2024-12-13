@@ -57,38 +57,6 @@ class FileGenerator:
             return
 
         self.logger.success(f"XML generation completed successfully: {target}")
-
-    def generate_README(self) -> None:
-        """Generates the README.md file"""
-        try:
-            origin_template_README = Path(__file__).parent / "templates" / "template_README.md"
-            self.logger.info("Reading in the template file for README.md")
-
-            # Check if the template file exists
-            if not origin_template_README.exists():
-                raise FileNotFoundError(f"Template file not found: {origin_template_README}")
-
-            # Read the template content
-            template_content = origin_template_README.read_text(encoding="utf-8")
-
-            # Set the target for the README.md
-            target = self.structure.README
-
-            self.logger.info(f"Writing the template to the target: {str(target)}")
-
-            # Write content to the target file
-            with open(target, 'w', encoding="utf-8") as README:
-                README.write(template_content)
-
-            self.logger.success(f"Successfully written README.md content to: {str(target)}")
-
-        except FileNotFoundError as fileNotFoundException:
-            self.logger.error(f"File not found: {fileNotFoundException}")
-        except PermissionError as premissionErrorException:
-            self.logger.error(f"Permission error: {premissionErrorException}")
-        except Exception as generalExcpetion:
-            self.logger.error(f"An unexpected error occurred: {generalExcpetion}")
-
     
     def _generate_static_files(self, target: Path, name: str) -> None:
         """Generate static files from templates
@@ -121,6 +89,11 @@ class FileGenerator:
             self.logger.error(f"An unexpected error occurred: {generalExcpetion}")
         pass
     
+    def generate_README(self) -> None:
+        """Generates the README.md file"""
+        self._generate_static_files(target=self.structure.README,
+                                    name="README.md")
+
     def generate_run(self) -> None:
         """Generates the run.sh file"""
         self._generate_static_files(target=self.structure.run,
