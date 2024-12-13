@@ -30,7 +30,7 @@ def test_configuration(generated_config):
         if '<solver-interface' in line or '</solver-interface>' in line:
             solver_interface_removed = False
         # Test for deprecated m2n attributes
-        if 'm2n=' in line and ('from=' in line or 'to=' in line):
+        if 'm2n' in line and ('from=' in line or 'to=' in line):
             m2n_replaced = False
         # Test for deprecated use-mesh attributes
         if 'use-mesh provide=' in line or '<use-mesh' in line:
