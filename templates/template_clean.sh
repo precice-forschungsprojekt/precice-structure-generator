@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # -------------------------------------------------------------------
-# Script Name: cleanup.sh
+# Script Name: clean.sh
 # Description: Deletes all files and directories in the current directory
 #              except for the hardcoded preserved files.
 #              Preserved files:
@@ -10,7 +10,7 @@
 #                - run.sh
 #                - config/adapter-config.json
 #                - config/precice-config.xml
-# Usage: ./cleanup.sh [--dry-run]
+# Usage: ./clean.sh [--dry-run]
 # -------------------------------------------------------------------
 
 # Exit immediately if a command exits with a non-zero status

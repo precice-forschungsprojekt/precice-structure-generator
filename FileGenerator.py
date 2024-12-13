@@ -89,34 +89,29 @@ class FileGenerator:
         except Exception as generalExcpetion:
             self.logger.error(f"An unexpected error occurred: {generalExcpetion}")
 
-    def generate_run(self) -> None:
-        """Generates the run.sh file"""
-        #TODO
-        pass
-
-    def generate_clean(self) -> None:
-        """Generates the clean.sh file."""
+    
+    def _generate_static_files(self, target: Path, name: str) -> None:
+        """Generate static files from templates
+            :param target: target file path
+            :param name: name of the function"""
         try:
-            tempalte_clean_sh = Path(__file__).parent / "templates" / "template_clean.sh"
-            self.logger.info("Reading in the template file for clean.sh")
+            tempalte = Path(__file__).parent / "templates" / f"template_{name}"
+            self.logger.info(f"Reading in the template file for {name}")
 
             # Check if the template file exists
-            if not tempalte_clean_sh.exists():
-                raise FileNotFoundError(f"Template file not found: {tempalte_clean_sh}")
+            if not tempalte.exists():
+                raise FileNotFoundError(f"Template file not found: {tempalte}")
 
             # Read the template content
-            template_content = tempalte_clean_sh.read_text(encoding="utf-8")
-
-            # Set the target for the clean.sh
-            target = self.structure.clean
+            template_content = tempalte.read_text(encoding="utf-8")
 
             self.logger.info(f"Writing the template to the target: {str(target)}")
 
             # Write content to the target file
-            with open(target, 'w', encoding="utf-8") as README:
-                README.write(template_content)
+            with open(target, 'w', encoding="utf-8") as template:
+                template.write(template_content)
 
-            self.logger.success(f"Successfully written clean.sh content to: {str(target)}")
+            self.logger.success(f"Successfully written {name} content to: {str(target)}")
 
         except FileNotFoundError as fileNotFoundException:
             self.logger.error(f"File not found: {fileNotFoundException}")
@@ -125,6 +120,16 @@ class FileGenerator:
         except Exception as generalExcpetion:
             self.logger.error(f"An unexpected error occurred: {generalExcpetion}")
         pass
+    
+    def generate_run(self) -> None:
+        """Generates the run.sh file"""
+        self._generate_static_files(target=self.structure.run,
+                                    name="run.sh")
+
+    def generate_clean(self) -> None:
+        """Generates the clean.sh file."""
+        self._generate_static_files(target=self.structure.clean,
+                                    name="clean.sh")
 
     def generate_adapter_config(self, target_participant: str) -> None:
         """Generates the adapter-config.json file."""
@@ -156,4 +161,5 @@ if __name__ == "__main__":
     fileGenerator.generate_precice_config()
     fileGenerator.generate_README()
     fileGenerator.generate_clean()
+    fileGenerator.generate_run()
     fileGenerator.generate_adapter_config(target_participant="Calculix")
