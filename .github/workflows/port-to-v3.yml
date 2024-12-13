@@ -26,6 +26,10 @@ jobs:
         pip install pytest
         pip install -r requirements.txt
     
+    - name: Generate preCICE Configuration
+      run: |
+        python FileGenerator.py
+    
     - name: Run Porting to v3 Tests
       run: |
         python -m pytest tests/test_porting_to_v3.py -s
