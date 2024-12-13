@@ -32,16 +32,21 @@ cd precice-structure-generator
 #or
 ./setup_scripts/install_dependencies.ps1
 ```
-If you like to do it manually:
-2. Create and activate a virtual environment (recommended):
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-```
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+
+3. Alternatively,  if you like to do it manually:
+    3.1 Create and activate a virtual environment (recommended):
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    ```
+    3.2 Install dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+    3.3 Initialize the submodule:
+    ```bash
+    git submodule update --init	
+    ```
 
 ## Usage
 
