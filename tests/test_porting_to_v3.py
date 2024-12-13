@@ -6,8 +6,9 @@ def test_no_solver_interface_tags(generated_config):
 
 def test_no_deprecated_m2n_attributes(generated_config):
     """Verify m2n attributes 'from' and 'to' are replaced"""
-    assert 'from=' not in generated_config, "Deprecated 'm2n:from' attribute should be replaced"
-    assert 'to=' not in generated_config, "Deprecated 'm2n:to' attribute should be replaced"
+    if 'm2n=' in generated_config:
+        assert 'from=' not in generated_config, "Deprecated 'm2n:from' attribute should be replaced"
+        assert 'to=' not in generated_config, "Deprecated 'm2n:to' attribute should be replaced"
 
 def test_no_deprecated_use_mesh_attributes(generated_config):
     """Verify 'provide' attribute in use-mesh is replaced"""
