@@ -107,7 +107,7 @@ class FileGenerator:
             # Read the template content
             template_content = tempalte_clean_sh.read_text(encoding="utf-8")
 
-            # Set the target for the README.md
+            # Set the target for the clean.sh
             target = self.structure.clean
 
             self.logger.info(f"Writing the template to the target: {str(target)}")
