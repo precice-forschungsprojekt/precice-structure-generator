@@ -1,0 +1,9 @@
+{
+  "participant_name": null,
+  "config_file_name": "./_generated/config/precice-config.xml",
+  "interface": {
+      "coupling_mesh_name": null,
+      "write_data_name": null,
+      "read_data_name": null
+  }
+}

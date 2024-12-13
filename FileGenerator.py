@@ -6,6 +6,7 @@ from controller_utils.ui_struct.UI_UserInput import UI_UserInput
 from controller_utils.myutils.UT_PCErrorLogging import UT_PCErrorLogging
 from controller_utils.precice_struct import PS_PreCICEConfig
 import argparse
+from generation_utils.AdapterConfigGenerator import AdapterConfigGenerator
 
 class FileGenerator:
     def __init__(self, input_file: Path, output_path: Path) -> None:
@@ -98,10 +99,12 @@ class FileGenerator:
         #TODO
         pass
 
-    def generate_adapter_config(self) -> None:
+    def generate_adapter_config(self, target_participant: str) -> None:
         """Generates the adapter-config.json file."""
-        #TODO
-        pass
+        adapter_config_generator = AdapterConfigGenerator(adapter_config_path=self.structure.adapter_config,
+                                                            precice_config_path=self.structure.precice_config, 
+                                                            target_participant=target_participant)
+        adapter_config_generator.write_to_file()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Takes topology.yaml files as input and writes out needed files to start the precice.")
@@ -125,3 +128,4 @@ if __name__ == "__main__":
     fileGenerator = FileGenerator(args.input_file, args.output_path)
     fileGenerator.generate_precice_config()
     fileGenerator.generate_README()
+    fileGenerator.generate_adapter_config(target_participant="Calculix")
