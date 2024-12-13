@@ -34,6 +34,7 @@ cd precice-structure-generator
 ```
 
 3. Alternatively,  if you like to do it manually:
+
     3.1 Create and activate a virtual environment (recommended):
     ```bash
     python -m venv venv
