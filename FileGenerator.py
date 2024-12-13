@@ -96,7 +96,34 @@ class FileGenerator:
 
     def generate_clean(self) -> None:
         """Generates the clean.sh file."""
-        #TODO
+        try:
+            tempalte_clean_sh = Path(__file__).parent / "templates" / "template_clean.sh"
+            self.logger.info("Reading in the template file for clean.sh")
+
+            # Check if the template file exists
+            if not tempalte_clean_sh.exists():
+                raise FileNotFoundError(f"Template file not found: {tempalte_clean_sh}")
+
+            # Read the template content
+            template_content = tempalte_clean_sh.read_text(encoding="utf-8")
+
+            # Set the target for the README.md
+            target = self.structure.clean
+
+            self.logger.info(f"Writing the template to the target: {str(target)}")
+
+            # Write content to the target file
+            with open(target, 'w', encoding="utf-8") as README:
+                README.write(template_content)
+
+            self.logger.success(f"Successfully written clean.sh content to: {str(target)}")
+
+        except FileNotFoundError as fileNotFoundException:
+            self.logger.error(f"File not found: {fileNotFoundException}")
+        except PermissionError as premissionErrorException:
+            self.logger.error(f"Permission error: {premissionErrorException}")
+        except Exception as generalExcpetion:
+            self.logger.error(f"An unexpected error occurred: {generalExcpetion}")
         pass
 
     def generate_adapter_config(self, target_participant: str) -> None:
@@ -128,4 +155,5 @@ if __name__ == "__main__":
     fileGenerator = FileGenerator(args.input_file, args.output_path)
     fileGenerator.generate_precice_config()
     fileGenerator.generate_README()
+    fileGenerator.generate_clean()
     fileGenerator.generate_adapter_config(target_participant="Calculix")
