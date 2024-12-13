@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python
       uses: actions/setup-python@v3
@@ -28,4 +28,4 @@ jobs:
     
     - name: Run Porting to v3 Tests
       run: |
-        python -m pytest tests/test_porting_to_v3.py -v
+        python -m pytest tests/test_porting_to_v3.py

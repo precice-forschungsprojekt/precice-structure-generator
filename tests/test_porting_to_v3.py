@@ -9,9 +9,8 @@ def generated_config():
     config_path = os.path.join(
         os.path.dirname(__file__), 
         '..', 
-        '_generated', 
-        'config', 
-        'precice-config.xml'
+        'tests', 
+        'port-example.xml'
     )
     
     with open(config_path, 'r') as f:
