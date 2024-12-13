@@ -3,10 +3,11 @@ import pytest
 def test_no_solver_interface_tags(generated_config):
     """Verify no <solver-interface> tags remain in the configuration"""
     assert '<solver-interface' not in generated_config, "Solver interface tags should be removed"
+    assert '</solver-interface>' not in generated_config, "Solver interface closing tags should be removed"
 
 def test_no_deprecated_m2n_attributes(generated_config):
     """Verify m2n attributes 'from' and 'to' are replaced"""
-    if 'm2n=' in generated_config:
+    if 'm2n:' in generated_config:
         assert 'from=' not in generated_config, "Deprecated 'm2n:from' attribute should be replaced"
         assert 'to=' not in generated_config, "Deprecated 'm2n:to' attribute should be replaced"
 
