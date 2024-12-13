@@ -5,7 +5,7 @@ from generation_utils.Logger import Logger
 from controller_utils.ui_struct.UI_UserInput import UI_UserInput
 from controller_utils.myutils.UT_PCErrorLogging import UT_PCErrorLogging
 from controller_utils.precice_struct import PS_PreCICEConfig
-import argparse
+import argparse, os
 
 class FileGenerator:
     def __init__(self, input_file: Path, output_path: Path) -> None:
@@ -89,9 +89,48 @@ class FileGenerator:
             self.logger.error(f"An unexpected error occurred: {generalExcpetion}")
 
     def generate_run(self) -> None:
-        """Generates the run.sh file"""
-        #TODO
-        pass
+        """Generates run.sh files for each participant."""
+        try:
+            # Get the template run script
+            origin_template_run = Path(__file__).parent / "templates" / "template_run.sh"
+            self.logger.info("Reading in the template file for run.sh")
+
+            # Check if the template file exists
+            if not origin_template_run.exists():
+                raise FileNotFoundError(f"Template file not found: {origin_template_run}")
+
+            # Read the template content
+            template_content = origin_template_run.read_text(encoding="utf-8")
+
+            # Create a run.sh for each participant
+            for participant in self.user_ui.participants:
+                # Create participant-specific folder
+                participant_folder = os.path.join("_generated", participant)
+
+                # Create the directory if it doesn't exist
+                os.makedirs(participant_folder, exist_ok=True)
+
+                # Path for the run script in the participant's folder
+                target = os.path.join(participant_folder, "run.sh")
+
+
+                self.logger.info(f"Writing run script for participant {participant} to: {str(target)}")
+
+                # Write content to the target file
+                with open(target, 'w', encoding="utf-8") as run_script:
+                    run_script.write(template_content)
+
+                # Make the script executable
+                #target.chmod(0o755)
+
+            self.logger.success("Successfully generated run scripts for all participants")
+
+        except FileNotFoundError as fileNotFoundException:
+            self.logger.error(f"File not found: {fileNotFoundException}")
+        except PermissionError as permissionErrorException:
+            self.logger.error(f"Permission error: {permissionErrorException}")
+        except Exception as generalException:
+            self.logger.error(f"An unexpected error occurred: {generalException}")
 
     def generate_clean(self) -> None:
         """Generates the clean.sh file."""
@@ -124,4 +163,5 @@ if __name__ == "__main__":
 
     fileGenerator = FileGenerator(args.input_file, args.output_path)
     fileGenerator.generate_precice_config()
+    fileGenerator.generate_run()
     fileGenerator.generate_README()
