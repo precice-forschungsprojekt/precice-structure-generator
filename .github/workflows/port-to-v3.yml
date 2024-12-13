@@ -28,4 +28,4 @@ jobs:
     
     - name: Run Porting to v3 Tests
       run: |
-        python -m pytest tests/test_porting_to_v3.py
+        python -m pytest tests/test_porting_to_v3.py -s
