@@ -19,22 +19,37 @@ def generated_config():
 
 def test_configuration(generated_config):
     """Verify various deprecated tags and attributes are removed or replaced"""
+    solver_interface_removed = True
+    m2n_replaced = True
+    use_mesh_replaced = True
+    extrapolation_order_removed = True
+
     for line in generated_config.splitlines():
         # Test for solver interface tags
-        assert '<solver-interface' not in line, "Solver interface tags should be removed"
-        assert '</solver-interface>' not in line, "Solver interface closing tags should be removed"
-        
+        if '<solver-interface' in line or '</solver-interface>' in line:
+            solver_interface_removed = False
         # Test for deprecated m2n attributes
-        if 'm2n' in line:
-            assert 'from=' not in line, "Deprecated 'm2n:from' attribute should be replaced"
-            assert 'to=' not in line, "Deprecated 'm2n:to' attribute should be replaced"
-        
+        if 'm2n' in line and ('from=' in line or 'to=' in line):
+            m2n_replaced = False
         # Test for deprecated use-mesh attributes
-        assert 'use-mesh provide=' not in line, "Deprecated 'use-mesh provide' should be replaced"
-        assert '<use-mesh' not in line, "Use-mesh tags should be replaced with provide-mesh/receive-mesh"
-        
+        if 'use-mesh provide=' in line or '<use-mesh' in line:
+            use_mesh_replaced = False
         # Test for extrapolation order
-        assert '<extrapolation-order' not in line, "Extrapolation order should be removed"
+        if '<extrapolation-order' in line:
+            extrapolation_order_removed = False
+
+    # Asserting and printing custom messages
+    assert solver_interface_removed, "Solver interface tags should be removed"
+    print("Solver interface tags removed successfully.")
+
+    assert m2n_replaced, "Deprecated 'm2n:from' and 'm2n:to' attributes should be replaced"
+    print("Deprecated 'm2n:from' and 'm2n:to' attributes replaced successfully.")
+
+    assert use_mesh_replaced, "Deprecated 'use-mesh provide' should be replaced"
+    print("Deprecated 'use-mesh provide' attributes and tags replaced successfully.")
+
+    assert extrapolation_order_removed, "Extrapolation order should be removed"
+    print("Extrapolation order tags removed successfully.")
 
 # Add this at the end of the file
 if __name__ == "__main__":
