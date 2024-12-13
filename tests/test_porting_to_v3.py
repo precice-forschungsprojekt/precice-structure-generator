@@ -23,13 +23,14 @@ def test_configuration(generated_config):
     m2n_replaced = True
     use_mesh_replaced = True
     extrapolation_order_removed = True
+    timing_removed = True
 
     for line in generated_config.splitlines():
         # Test for solver interface tags
         if '<solver-interface' in line or '</solver-interface>' in line:
             solver_interface_removed = False
         # Test for deprecated m2n attributes
-        if 'm2n' in line and ('from=' in line or 'to=' in line):
+        if 'm2n=' in line and ('from=' in line or 'to=' in line):
             m2n_replaced = False
         # Test for deprecated use-mesh attributes
         if 'use-mesh provide=' in line or '<use-mesh' in line:
@@ -37,6 +38,9 @@ def test_configuration(generated_config):
         # Test for extrapolation order
         if '<extrapolation-order' in line:
             extrapolation_order_removed = False
+        # Test for timing attributes in mapping configuration
+        if 'timing="initial"' in line:
+            timing_removed = False
 
     # Asserting and printing custom messages
     assert solver_interface_removed, "Solver interface tags should be removed"
@@ -50,6 +54,9 @@ def test_configuration(generated_config):
 
     assert extrapolation_order_removed, "Extrapolation order should be removed"
     print("Extrapolation order tags removed successfully.")
+
+    assert timing_removed, "Timing attributes in the mapping configuration should be removed"
+    print("Timing attributes in the mapping configuration removed successfully.")
 
 # Add this at the end of the file
 if __name__ == "__main__":
