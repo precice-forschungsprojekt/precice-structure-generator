@@ -2,9 +2,11 @@ name: Test Porting to v3
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
+  # Allows manual triggering of the workflow
+  workflow_dispatch:
 
 jobs:
   test-porting:
