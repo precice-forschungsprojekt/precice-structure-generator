@@ -12,7 +12,9 @@ class StructureHandler:
         self.generated_root = self.root / "_generated"
         self.logger = Logger()
 
-        # Create level 0 structure (everything in the root folder)  
+        # Create level 0 structure (everything in the root folder)
+        if clean_generated:
+            self._cleaner()
         self._create_folder_sturcture()
         self._create_level_0_structure()
 
