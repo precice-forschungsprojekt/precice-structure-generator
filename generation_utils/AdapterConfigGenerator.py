@@ -78,7 +78,7 @@ class AdapterConfigGenerator:
 
         # Debug: Print all XML content
         xml_content = etree.tostring(self.root, pretty_print=True).decode()
-        self.logger.info(f"Full XML content:\n{xml_content}")
+        #self.logger.info(f"Full XML content:\n{xml_content}")
 
         # Find the target participant (case-insensitive and partial match)
         participant_elem = None
