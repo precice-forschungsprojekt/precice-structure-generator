@@ -1,41 +1,52 @@
-<?xml version="1.0" encoding='UTF-8'?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <precice-configuration>
-
-   <solver-interface dimensions="3">
-      <data:vector name="Forces0"/>
-
-      <mesh name="SU2_Mesh0">
-         <use-data name="Forces0"/>
-      </mesh>
-
-      <mesh name="Calculix_Mesh">
-         <use-data name="Forces0"/>
-      </mesh>
-
-      <participant name="SU2">
-         <use-mesh name="Calculix_Mesh" from="CCX"/>
-         <use-mesh name="SU2_Mesh0" provide="yes"/>
-         <write-data name="Forces0" mesh="SU2_Mesh0"/>
-         <mapping:nearest-neighbor
-            direction="write" from="SU2_Mesh0" to="Calculix_Mesh"
-            constraint="conservative" timing="initial"/>
-      </participant>
-
-      <participant name="CCX">
-         <use-mesh name="Calculix_Mesh" provide="yes"/>
-         <read-data name="Forces0"      mesh="Calculix_Mesh"/>
-      </participant>
-
-      <m2n:sockets from="SU2" to="CCX"  exchange-directory="../" />
-      
-      <coupling-scheme:parallel-explicit>
-           <participants first="SU2" second="CCX"/>
-           <max-timesteps value="20"/>
-           <timestep-length value="1e-3" />
-           <exchange data="Forces0" mesh="Calculix_Mesh" from="SU2" to="CCX"/>
-      </coupling-scheme:parallel-explicit>
-
-   </solver-interface>
-
+  <!-- Removed <solver-interface> wrapper and moved its children up. -->
+  
+  <data:vector name="Forces0"/>
+  
+  <!-- Added dimensions="3" to each mesh and updated mesh names according to naming conventions: underscores replaced with hyphens. -->
+  <mesh name="SU2-Mesh0" dimensions="3">
+    <use-data name="Forces0"/>
+  </mesh>
+  
+  <!-- Renamed Calculix_Mesh to CCX-Mesh and added dimensions. -->
+  <mesh name="CCX-Mesh" dimensions="3">
+    <use-data name="Forces0"/>
+  </mesh>
+  
+  <participant name="SU2">
+    <!-- Replaced <use-mesh ... provide="yes"> with <provide-mesh ...> and <use-mesh ... from="..."> with <receive-mesh ...>. -->
+    <receive-mesh name="CCX-Mesh" from="CCX"/>
+    <provide-mesh name="SU2-Mesh0"/>
+    
+    <write-data name="Forces0" mesh="SU2-Mesh0"/>
+    
+    <!-- Removed timing attribute from mapping and updated mesh names. -->
+    <mapping:nearest-neighbor
+        direction="write"
+        from="SU2-Mesh0"
+        to="CCX-Mesh"
+        constraint="conservative"/>
+  </participant>
+  
+  <participant name="CCX">
+    <provide-mesh name="CCX-Mesh"/>
+    <read-data name="Forces0" mesh="CCX-Mesh"/>
+  </participant>
+  
+  <!-- Updated <m2n:sockets> with new attribute names and directory naming conventions. -->
+  <m2n:sockets acceptor="SU2" connector="CCX" exchange-directory="../"/>
+  
+  <coupling-scheme:parallel-explicit>
+    <participants first="SU2" second="CCX"/>
+    
+    <!-- Renamed max-timesteps to max-time-windows -->
+    <max-time-windows value="20"/>
+    <!-- Renamed timestep-length to time-window-size -->
+    <time-window-size value="1e-3"/>
+    
+    <!-- Updated mesh name to CCX-Mesh -->
+    <exchange data="Forces0" mesh="CCX-Mesh" from="SU2" to="CCX"/>
+  </coupling-scheme:parallel-explicit>
+  
 </precice-configuration>

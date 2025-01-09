@@ -1,124 +1,162 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <precice-configuration>
+  <!-- Removed <solver-interface> wrapper and elevated children. -->
+  
+  <!-- Data vector definitions remain unchanged. -->
+  <data:vector name="Forces1"/>
+  <data:vector name="Displacements1"/>
+  <data:vector name="Forces2"/>
+  <data:vector name="Displacements2"/>
+  <data:vector name="Forces3"/>
+  <data:vector name="Displacements3"/>
 
-   <solver-interface dimensions="2">   
-      <data:vector name="Forces1"/>
-      <data:vector name="Displacements1"/> 
-      <data:vector name="Forces2"/>
-      <data:vector name="Displacements2"/> 
-      <data:vector name="Forces3"/>
-      <data:vector name="Displacements3"/> 
-   
-      <mesh name="NASTIN1_Mesh">
-         <use-data name="Displacements1"/>
-         <use-data name="Forces1"/>
-      </mesh>
+  <!-- Updated mesh names: replaced underscores with hyphens and added dimensions="2". -->
+  <mesh name="NASTIN1-Mesh" dimensions="2">
+    <use-data name="Displacements1"/>
+    <use-data name="Forces1"/>
+  </mesh>
 
-      <mesh name="NASTIN2_Mesh1">
-         <use-data name="Displacements2"/>
-         <use-data name="Forces2"/>
-      </mesh>
+  <mesh name="NASTIN2-Mesh1" dimensions="2">
+    <use-data name="Displacements2"/>
+    <use-data name="Forces2"/>
+  </mesh>
 
-      <mesh name="NASTIN2_Mesh2">
-         <use-data name="Displacements3"/>
-         <use-data name="Forces3"/>
-      </mesh>
+  <mesh name="NASTIN2-Mesh2" dimensions="2">
+    <use-data name="Displacements3"/>
+    <use-data name="Forces3"/>
+  </mesh>
 
-      <mesh name="SOLIDZ1_Mesh1">
-         <use-data name="Displacements1"/>
-         <use-data name="Forces1"/>
-      </mesh>
+  <mesh name="SOLIDZ1-Mesh1" dimensions="2">
+    <use-data name="Displacements1"/>
+    <use-data name="Forces1"/>
+  </mesh>
 
-      <mesh name="SOLIDZ1_Mesh2">
-         <use-data name="Displacements2"/>
-         <use-data name="Forces2"/>
-      </mesh>
+  <mesh name="SOLIDZ1-Mesh2" dimensions="2">
+    <use-data name="Displacements2"/>
+    <use-data name="Forces2"/>
+  </mesh>
 
-      <mesh name="SOLIDZ2_Mesh">
-         <use-data name="Displacements3"/>
-         <use-data name="Forces3"/>
-      </mesh>
+  <mesh name="SOLIDZ2-Mesh" dimensions="2">
+    <use-data name="Displacements3"/>
+    <use-data name="Forces3"/>
+  </mesh>
 
-      <participant name="NASTIN1">
-         <use-mesh name="SOLIDZ_Mesh1" from="SOLIDZ1"/>
-         <use-mesh name="NASTIN1_Mesh" provide="yes"/>
-         <write-data name="Forces1" mesh="NASTIN1_Mesh"/>
-         <read-data name="Displacements1" mesh="NASTIN1_Mesh"/>
-         <mapping:nearest-neighbor direction="write" from="NASTIN1_Mesh" to="SOLIDZ_Mesh1" constraint="conservative" timing="initial"/>
-         <mapping:nearest-neighbor direction="read" from="SOLIDZ_Mesh1" to="NASTIN1_Mesh" constraint="consistent" timing="initial"/>
-      </participant>
+  <!-- Participant NASTIN1 migration -->
+  <participant name="NASTIN1">
+    <!-- Replaced use-mesh with new provide/receive syntax and updated mesh names -->
+    <receive-mesh name="SOLIDZ1-Mesh1" from="SOLIDZ1"/>
+    <provide-mesh name="NASTIN1-Mesh"/>
+    <write-data name="Forces1" mesh="NASTIN1-Mesh"/>
+    <read-data name="Displacements1" mesh="NASTIN1-Mesh"/>
+    <!-- Removed timing attributes from mappings -->
+    <mapping:nearest-neighbor 
+         direction="write" 
+         from="NASTIN1-Mesh" 
+         to="SOLIDZ1-Mesh1" 
+         constraint="conservative"/>
+    <mapping:nearest-neighbor 
+         direction="read" 
+         from="SOLIDZ1-Mesh1" 
+         to="NASTIN1-Mesh" 
+         constraint="consistent"/>
+  </participant>
 
-      <participant name="NASTIN2">
-         <use-mesh name="SOLIDZ1_Mesh2" from="SOLIDZ1"/>
-         <use-mesh name="NASTIN2_Mesh1" provide="yes"/>
-         <use-mesh name="SOLIDZ2_Mesh" from="SOLIDZ2"/>
-         <use-mesh name="NASTIN2_Mesh2" provide="yes"/>
-         <use-mesh name="SOLIDZ1_Mesh1" from="SOLIDZ1"/>
-         <write-data name="Forces2" mesh="NASTIN2_Mesh1"/>
-         <read-data name="Displacements2" mesh="NASTIN2_Mesh1"/>
-         <write-data name="Forces3" mesh="NASTIN2_Mesh2"/>
-         <read-data name="Displacements3" mesh="NASTIN2_Mesh2"/>
-         <mapping:nearest-neighbor direction="write" from="NASTIN2_Mesh1" to="SOLIDZ1_Mesh2" constraint="conservative" timing="initial"/>
-         <mapping:nearest-neighbor direction="read" from="SOLIDZ1_Mesh2" to="NASTIN2_Mesh1" constraint="consistent" timing="initial"/>
-         <mapping:nearest-neighbor direction="write" from="NASTIN2_Mesh1" to="SOLIDZ2_Mesh" constraint="conservative" timing="initial"/>
-         <mapping:nearest-neighbor direction="read" from="SOLIDZ2_Mesh" to="NASTIN2_Mesh2" constraint="consistent" timing="initial"/>
-      </participant>
-      
-      <participant name="SOLIDZ1">
-	     <use-mesh name="SOLIDZ1_Mesh1" provide="yes"/>
-         <use-mesh name="SOLIDZ1_Mesh2" provide="yes"/>
-         <write-data name="Displacements1" mesh="SOLIDZ1_Mesh1"/>
-         <read-data name="Forces1" mesh="SOLIDZ1_Mesh1"/>
-         <write-data name="Displacements2" mesh="SOLIDZ1_Mesh2"/>
-         <read-data name="Forces2" mesh="SOLIDZ1_Mesh2"/>
-      </participant>
+  <!-- Participant NASTIN2 migration -->
+  <participant name="NASTIN2">
+    <!-- Replaced use-mesh elements with provide/receive syntax and updated mesh names -->
+    <receive-mesh name="SOLIDZ1-Mesh2" from="SOLIDZ1"/>
+    <provide-mesh name="NASTIN2-Mesh1"/>
+    <receive-mesh name="SOLIDZ2-Mesh" from="SOLIDZ2"/>
+    <provide-mesh name="NASTIN2-Mesh2"/>
+    <receive-mesh name="SOLIDZ1-Mesh1" from="SOLIDZ1"/>
+    <write-data name="Forces2" mesh="NASTIN2-Mesh1"/>
+    <read-data name="Displacements2" mesh="NASTIN2-Mesh1"/>
+    <write-data name="Forces3" mesh="NASTIN2-Mesh2"/>
+    <read-data name="Displacements3" mesh="NASTIN2-Mesh2"/>
+    <!-- Removed timing attributes from mapping elements -->
+    <mapping:nearest-neighbor 
+         direction="write" 
+         from="NASTIN2-Mesh1" 
+         to="SOLIDZ1-Mesh2" 
+         constraint="conservative"/>
+    <mapping:nearest-neighbor 
+         direction="read" 
+         from="SOLIDZ1-Mesh2" 
+         to="NASTIN2-Mesh1" 
+         constraint="consistent"/>
+    <mapping:nearest-neighbor 
+         direction="write" 
+         from="NASTIN2-Mesh1" 
+         to="SOLIDZ2-Mesh" 
+         constraint="conservative"/>
+    <mapping:nearest-neighbor 
+         direction="read" 
+         from="SOLIDZ2-Mesh" 
+         to="NASTIN2-Mesh2" 
+         constraint="consistent"/>
+  </participant>
 
-      <participant name="SOLIDZ2">
-	     <use-mesh name="SOLIDZ2_Mesh" provide="yes"/>
-         <write-data name="Displacements3" mesh="SOLIDZ2_Mesh"/>
-         <read-data name="Forces3" mesh="SOLIDZ2_Mesh"/>
-      </participant>
-      
-      <m2n:mpi from="NASTIN1" to="SOLIDZ1" exchange-directory="../" />
-      <m2n:mpi from="SOLIDZ1" to="NASTIN2" exchange-directory="../" />
-      <m2n:mpi from="NASTIN2" to="SOLIDZ2" exchange-directory="../" />
-      
-      <coupling-scheme:multi>
-         <participant name="NASTIN1"/>
-         <participant name="NASTIN2" control="yes"/>
-         <participant name="SOLIDZ1"/>
-         <participant name="SOLIDZ2"/>
-         <max-timesteps value="200"/>
-         <timestep-length value="1e-3" /> 
- 	     <exchange data="Forces1" mesh="SOLIDZ1_Mesh1" from="NASTIN1" to="SOLIDZ1"/> 
-         <exchange data="Displacements1" mesh="SOLIDZ1_Mesh1" from="SOLIDZ1" to="NASTIN1"/>
- 	     <exchange data="Forces2" mesh="SOLIDZ1_Mesh2" from="NASTIN2" to="SOLIDZ1"/> 
-         <exchange data="Displacements2" mesh="SOLIDZ1_Mesh2" from="SOLIDZ1" to="NASTIN2"/>
- 	     <exchange data="Forces3" mesh="SOLIDZ2_Mesh" from="NASTIN2" to="SOLIDZ2"/> 
-         <exchange data="Displacements3" mesh="SOLIDZ2_Mesh" from="SOLIDZ2" to="NASTIN2"/>
- 	     <exchange data="Forces1" mesh="SOLIDZ1_Mesh1" from="NASTIN1" to="NASTIN2"/> 
-         <exchange data="Displacements1" mesh="SOLIDZ1_Mesh1" from="SOLIDZ1" to="NASTIN2"/>
-         <max-iterations value="30"/>
-         <relative-convergence-measure limit="1e-4" data="Displacements1" mesh="SOLIDZ1_Mesh1"/>
-         <relative-convergence-measure limit="1e-4" data="Forces1" mesh="SOLIDZ1_Mesh1"/>
-         <relative-convergence-measure limit="1e-4" data="Displacements2" mesh="SOLIDZ1_Mesh2"/>
-         <relative-convergence-measure limit="1e-4" data="Forces2" mesh="SOLIDZ1_Mesh2"/>
-         <relative-convergence-measure limit="1e-4" data="Displacements3" mesh="SOLIDZ2_Mesh"/>
-         <relative-convergence-measure limit="1e-4" data="Forces3" mesh="SOLIDZ2_Mesh"/>
-         <extrapolation-order value="0"/>
-         <post-processing:IQN-ILS>
-            <data name="Displacements1" mesh="SOLIDZ1_Mesh1"/>
-            <data name="Forces1" mesh="SOLIDZ1_Mesh1"/>
-            <data name="Displacements2" mesh="SOLIDZ1_Mesh2"/>
-            <data name="Forces2" mesh="SOLIDZ1_Mesh2"/>
-            <data name="Displacements3" mesh="SOLIDZ2_Mesh"/>
-            <data name="Forces3" mesh="SOLIDZ2_Mesh"/>
-            <preconditioner type="residual-sum"/>
-            <filter type="QR1" limit="1e-6"/>
-            <initial-relaxation value="0.1"/>
-            <max-used-iterations value="100"/>
-            <timesteps-reused value="20"/>
-     </post-processing:IQN-ILS>
-   </coupling-scheme:multi>
-</solver-interface>
+  <!-- Participant SOLIDZ1 migration -->
+  <participant name="SOLIDZ1">
+    <provide-mesh name="SOLIDZ1-Mesh1"/>
+    <provide-mesh name="SOLIDZ1-Mesh2"/>
+    <write-data name="Displacements1" mesh="SOLIDZ1-Mesh1"/>
+    <read-data name="Forces1" mesh="SOLIDZ1-Mesh1"/>
+    <write-data name="Displacements2" mesh="SOLIDZ1-Mesh2"/>
+    <read-data name="Forces2" mesh="SOLIDZ1-Mesh2"/>
+  </participant>
+
+  <!-- Participant SOLIDZ2 migration -->
+  <participant name="SOLIDZ2">
+    <provide-mesh name="SOLIDZ2-Mesh"/>
+    <write-data name="Displacements3" mesh="SOLIDZ2-Mesh"/>
+    <read-data name="Forces3" mesh="SOLIDZ2-Mesh"/>
+  </participant>
+
+  <!-- Converted m2n:mpi tags to m2n:sockets with updated attributes -->
+  <m2n:sockets acceptor="NASTIN1" connector="SOLIDZ1" exchange-directory="../"/>
+  <m2n:sockets acceptor="SOLIDZ1" connector="NASTIN2" exchange-directory="../"/>
+  <m2n:sockets acceptor="NASTIN2" connector="SOLIDZ2" exchange-directory="../"/>
+
+  <coupling-scheme:multi>
+    <participant name="NASTIN1"/>
+    <participant name="NASTIN2" control="yes"/>
+    <participant name="SOLIDZ1"/>
+    <participant name="SOLIDZ2"/>
+    <!-- Renamed max-timesteps and timestep-length -->
+    <max-time-windows value="200"/>
+    <time-window-size value="1e-3"/>
+    <!-- Updated exchange elements with new mesh names -->
+    <exchange data="Forces1" mesh="SOLIDZ1-Mesh1" from="NASTIN1" to="SOLIDZ1"/> 
+    <exchange data="Displacements1" mesh="SOLIDZ1-Mesh1" from="SOLIDZ1" to="NASTIN1"/>
+    <exchange data="Forces2" mesh="SOLIDZ1-Mesh2" from="NASTIN2" to="SOLIDZ1"/> 
+    <exchange data="Displacements2" mesh="SOLIDZ1-Mesh2" from="SOLIDZ1" to="NASTIN2"/>
+    <exchange data="Forces3" mesh="SOLIDZ2-Mesh" from="NASTIN2" to="SOLIDZ2"/> 
+    <exchange data="Displacements3" mesh="SOLIDZ2-Mesh" from="SOLIDZ2" to="NASTIN2"/>
+    <exchange data="Forces1" mesh="SOLIDZ1-Mesh1" from="NASTIN1" to="NASTIN2"/> 
+    <exchange data="Displacements1" mesh="SOLIDZ1-Mesh1" from="SOLIDZ1" to="NASTIN2"/>
+    <max-iterations value="30"/>
+    <relative-convergence-measure limit="1e-4" data="Displacements1" mesh="SOLIDZ1-Mesh1"/>
+    <relative-convergence-measure limit="1e-4" data="Forces1" mesh="SOLIDZ1-Mesh1"/>
+    <relative-convergence-measure limit="1e-4" data="Displacements2" mesh="SOLIDZ1-Mesh2"/>
+    <relative-convergence-measure limit="1e-4" data="Forces2" mesh="SOLIDZ1-Mesh2"/>
+    <relative-convergence-measure limit="1e-4" data="Displacements3" mesh="SOLIDZ2-Mesh"/>
+    <relative-convergence-measure limit="1e-4" data="Forces3" mesh="SOLIDZ2-Mesh"/>
+    <!-- Removed unsupported extrapolation-order element -->
+    <!-- Renamed post-processing:IQN-ILS to acceleration:IQN-ILS and updated child element -->
+    <acceleration:IQN-ILS>
+      <data name="Displacements1" mesh="SOLIDZ1-Mesh1"/>
+      <data name="Forces1" mesh="SOLIDZ1-Mesh1"/>
+      <data name="Displacements2" mesh="SOLIDZ1-Mesh2"/>
+      <data name="Forces2" mesh="SOLIDZ1-Mesh2"/>
+      <data name="Displacements3" mesh="SOLIDZ2-Mesh"/>
+      <data name="Forces3" mesh="SOLIDZ2-Mesh"/>
+      <preconditioner type="residual-sum"/>
+      <filter type="QR1" limit="1e-6"/>
+      <initial-relaxation value="0.1"/>
+      <max-used-iterations value="100"/>
+      <!-- Renamed timesteps-reused to time-windows-reused -->
+      <time-windows-reused value="20"/>
+    </acceleration:IQN-ILS>
+  </coupling-scheme:multi>
 </precice-configuration>
