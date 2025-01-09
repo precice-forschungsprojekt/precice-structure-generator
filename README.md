@@ -155,4 +155,4 @@ The tool provides detailed logging to help you understand the configuration gene
 
 ## Acknowledgements
 
-[Optional: Mention any contributors, funding sources, or related projects]
+This project was started with code from the [preCICE controller](https://github.com/precice/controller) repository.
