@@ -1,63 +1,89 @@
-<?xml version="1.0" encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <precice-configuration>
+  
+  <!-- Moved dimensions="3" to each mesh and applied naming conventions -->
+  <mesh name="SU2-CFD-Mesh" dimensions="3">
+    <use-data name="Force"/>
+    <use-data name="Displacement-Delta"/>
+  </mesh>
 
-   <solver-interface dimensions="3">
-      <data:vector name="Forces0"/>
-      <data:vector name="DisplacementDeltas0"/>
+  <mesh name="Calculix-Mesh" dimensions="3">
+    <use-data name="Displacement-Delta"/>
+    <use-data name="Force"/>
+  </mesh>
 
-      <mesh name="SU2_Mesh0">
-         <use-data name="Forces0"/>
-         <use-data name="DisplacementDeltas0"/>
-      </mesh>
+  <!-- we rename SOLIDZ_Mesh to Calculix-Z-Mesh, following the new convention. -->
+  <mesh name="Calculix-Z-Mesh" dimensions="3">
+    <!-- In some setups, you might use the same data names, or others. Adjust if needed. -->
+    <use-data name="Displacement-Delta"/>
+    <use-data name="Force"/>
+  </mesh>
 
-      <mesh name="Calculix_Mesh">
-         <use-data name="DisplacementDeltas0"/>
-         <use-data name="Forces0"/>
-      </mesh>
+  <!-- Participant "SU2_CFD" renamed to "SU2-CFD" -->
+  <participant name="SU2-CFD">
+    <!-- Provide or receive the needed meshes -->
+    <receive-mesh name="Calculix-Mesh" from="Calculix"/>
+    <provide-mesh name="SU2-CFD-Mesh"/>
+    
+    <!-- Data usage with updated names -->
+    <write-data name="Force" mesh="SU2-CFD-Mesh"/>
+    <read-data  name="Displacement-Delta" mesh="SU2-CFD-Mesh"/>
+    
+    <!-- Remove timing attributes -->
+    <mapping:nearest-neighbor
+        direction="write"
+        from="SU2-CFD-Mesh" to="Calculix-Mesh"
+        constraint="conservative" />
+    <mapping:nearest-neighbor
+        direction="read"
+        from="Calculix-Mesh" to="SU2-CFD-Mesh"
+        constraint="consistent" />
+  </participant>
 
-      <participant name="SU2_CFD">
-         <use-mesh name="Calculix_Mesh" from="Calculix"/>
-         <use-mesh name="SU2_Mesh0" provide="yes"/>
-         <write-data name="Forces0" mesh="SU2_Mesh0"/>
-         <read-data  name="DisplacementDeltas0" mesh="SU2_Mesh0"/>
-         <mapping:nearest-neighbor
-            direction="write" from="SU2_Mesh0" to="Calculix_Mesh"
-            constraint="conservative" timing="initial"/>
-         <mapping:nearest-neighbor
-	        direction="read" from="Calculix_Mesh" to="SU2_Mesh0"
-            constraint="consistent" timing="initial"/>
-      </participant>
+  <participant name="Calculix">
+    <provide-mesh name="Calculix-Mesh"/>
+    <!-- If needed, it could also provide the "Calculix-Z-Mesh" or receive it, 
+         depending on the actual use-case. Here, we keep it minimal. -->
+    <write-data name="Displacement-Delta" mesh="Calculix-Mesh"/>
+    <read-data  name="Force" mesh="Calculix-Mesh"/>
+  </participant>
 
-      <participant name="Calculix">
-         <use-mesh name="Calculix_Mesh" provide="yes"/>
-         <write-data name="DisplacementDeltas0" mesh="Calculix_Mesh"/>
-         <read-data  name="Forces0"      mesh="Calculix_Mesh"/>
-      </participant>
+  <!-- Updated "from" and "to" → "acceptor" and "connector" -->
+  <m2n:sockets acceptor="SU2-CFD" connector="Calculix" exchange-directory="../"/>
+  
+  <coupling-scheme:parallel-implicit>
+    <participants first="SU2-CFD" second="Calculix"/>
+    
+    <!-- Renamed attributes -->
+    <max-time-windows value="20"/>
+    <time-window-size value="1e-3"/>
+    
+    <!-- Exchanges with updated data and mesh names -->
+    <exchange data="Force"             mesh="Calculix-Mesh" from="SU2-CFD"  to="Calculix"/>
+    <exchange data="Displacement-Delta" mesh="Calculix-Mesh" from="Calculix" to="SU2-CFD"/>
+    
+    <max-iterations value="50"/>
+    
+    <relative-convergence-measure limit="1e-4" data="Displacement-Delta" mesh="Calculix-Mesh"/>
+    <relative-convergence-measure limit="1e-4" data="Force"             mesh="Calculix-Mesh"/>
+    
+    <!-- Removed <extrapolation-order> because v3 no longer supports it -->
 
-      <m2n:sockets from="SU2_CFD" to="Calculix"  exchange-directory="../" />
-      
-      <coupling-scheme:parallel-implicit>
-           <participants first="SU2_CFD" second="Calculix"/>
-           <max-timesteps value="20"/>
-           <timestep-length value="1e-3" />
-           <exchange data="Forces0" mesh="Calculix_Mesh" from="SU2_CFD" to="Calculix"/>
-           <exchange data="DisplacementDeltas0" mesh="Calculix_Mesh" from="Calculix" to="SU2_CFD" />
-           <max-iterations value="50"/>
-           <relative-convergence-measure limit="1e-4" data="DisplacementDeltas0" mesh="Calculix_Mesh"/>
-           <relative-convergence-measure limit="1e-4" data="Forces0" mesh="Calculix_Mesh"/>
-           <extrapolation-order value="2"/>
-           <post-processing:IQN-ILS>
-            <data name="DisplacementDeltas0" mesh="SOLIDZ_Mesh"/>
-            <data name="Forces0" mesh="SOLIDZ_Mesh"/>
-            <preconditioner type="residual-sum"/>
-            <filter type="QR1" limit="1e-6"/>
-            <initial-relaxation value="0.1"/>
-            <max-used-iterations value="50"/>
-            <timesteps-reused value="10"/>
-         </post-processing:IQN-ILS>
-      </coupling-scheme:parallel-implicit>
+    <!-- Renamed <post-processing:IQN-ILS> to <acceleration:IQN-ILS> 
+         and adjusted data/mesh names to new naming. 
+         Example usage with the special "Calculix-Z-Mesh" -->
+    <acceleration:IQN-ILS>
+      <data name="Displacement-Delta" mesh="Calculix-Z-Mesh"/>
+      <data name="Force"             mesh="Calculix-Z-Mesh"/>
+      <preconditioner type="residual-sum"/>
+      <filter type="QR1" limit="1e-6"/>
+      <initial-relaxation value="0.1"/>
+      <max-used-iterations value="50"/>
+      <!-- Renamed timesteps-reused → time-windows-reused -->
+      <time-windows-reused value="10"/>
+    </acceleration:IQN-ILS>
 
-   </solver-interface>
+  </coupling-scheme:parallel-implicit>
 
 </precice-configuration>
