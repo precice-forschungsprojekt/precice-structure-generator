@@ -161,4 +161,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     fileGenerator = FileGenerator(args.input_file, args.output_path)
+    fileGenerator.generate_level_0()
     fileGenerator.generate_level_1()

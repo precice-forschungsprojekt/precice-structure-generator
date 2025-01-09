@@ -45,7 +45,8 @@ class StructureHandler:
 
     def create_level_1_structure(self, participant: str) -> list[Path]:
         """ Creates the necessary files of level 1 (everything in the generated sub-folders).
-            :param participant: The participant for which the files should be created."""
+            :param participant: The participant for which the files should be created.
+            :return: participant_folder, adapter_config, run"""
         try:
             # Create the participant folder
             participant_folder = self.generated_root / participant
