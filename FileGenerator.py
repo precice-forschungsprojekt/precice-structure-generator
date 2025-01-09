@@ -20,7 +20,7 @@ class FileGenerator:
         self.logger = Logger()
         self.structure = StructureHandler(output_path)
 
-    def generate_precice_config(self) -> None:
+    def _generate_precice_config(self) -> None:
         """Generates the precice-config.xml file based on the topology.yaml file."""
 
         # Try to open the yaml file and get the configuration
@@ -89,27 +89,57 @@ class FileGenerator:
             self.logger.error(f"An unexpected error occurred: {generalExcpetion}")
         pass
     
-    def generate_README(self) -> None:
+    def _generate_README(self) -> None:
         """Generates the README.md file"""
         self._generate_static_files(target=self.structure.README,
                                     name="README.md")
 
-    def generate_run(self) -> None:
+    def _generate_run(self) -> None:
         """Generates the run.sh file"""
         self._generate_static_files(target=self.structure.run,
                                     name="run.sh")
 
-    def generate_clean(self) -> None:
+    def _generate_clean(self) -> None:
         """Generates the clean.sh file."""
         self._generate_static_files(target=self.structure.clean,
                                     name="clean.sh")
 
-    def generate_adapter_config(self, target_participant: str) -> None:
+    def _generate_adapter_config(self, target_participant: str, adapter_config: Path) -> None:
         """Generates the adapter-config.json file."""
-        adapter_config_generator = AdapterConfigGenerator(adapter_config_path=self.structure.adapter_config,
+        adapter_config_generator = AdapterConfigGenerator(adapter_config_path=adapter_config,
                                                             precice_config_path=self.structure.precice_config, 
                                                             target_participant=target_participant)
         adapter_config_generator.write_to_file()
+    
+    def generate_level_0(self) -> None:
+        """Fills out the files of level 0 (everything in the root folder)."""
+        self._generate_clean()
+        self._generate_README()
+        self._generate_precice_config()
+    
+    def _extract_participants(self) -> list[str]:
+        """Extracts the participants from the topology.yaml file."""
+        try:
+            with open(self.input_file, "r") as config_file:
+                config = yaml.load(config_file.read(), Loader=yaml.SafeLoader)
+                self.logger.info(f"Input YAML file: {self.input_file}")
+        except FileNotFoundError:
+            self.logger.error(f"Input YAML file {self.input_file} not found.")
+            return
+        except Exception as e:
+            self.logger.error(f"Error reading input YAML file: {str(e)}")
+            return
+        
+        return list(config["participants"].keys())
+    
+    def generate_level_1(self) -> None:
+        """Generates the files of level 1 (everything in the generated sub-folders)."""
+
+        participants = self._extract_participants()
+        for participant in participants:
+            target_participant = self.structure.create_level_1_structure(participant)
+            adapter_config = target_participant[1]
+            self._generate_adapter_config(target_participant=participant, adapter_config=adapter_config)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Takes topology.yaml files as input and writes out needed files to start the precice.")
@@ -131,8 +161,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     fileGenerator = FileGenerator(args.input_file, args.output_path)
-    fileGenerator.generate_precice_config()
-    fileGenerator.generate_README()
-    fileGenerator.generate_clean()
-    fileGenerator.generate_run()
-    fileGenerator.generate_adapter_config(target_participant="Calculix")
+    fileGenerator.generate_level_1()

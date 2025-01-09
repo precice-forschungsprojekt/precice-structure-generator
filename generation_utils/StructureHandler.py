@@ -10,39 +10,31 @@ class StructureHandler:
         # Objects
         self.root = output_path
         self.generated_root = self.root / "_generated"
-        self.config_dir = self.generated_root / "config"
         self.logger = Logger()
 
-        # Methods in pre-processing
-        if clean_generated:
-            self._cleaner()
+        # Create level 0 structure (everything in the root folder)  
         self._create_folder_sturcture()
-        self._create_files()
+        self._create_level_0_structure()
 
     def _create_folder_sturcture(self) -> None:
         """Creates the structure needed for generated files"""
         try: 
             self.generated_root.mkdir(parents=True, exist_ok=True)
             self.logger.success(f"Created folder: {self.generated_root}")
-
-            self.config_dir.mkdir(parents=True, exist_ok=True)
-            self.logger.success(f"Created folder: {self.config_dir}")
         except Exception as create_folder_structure_excpetion:
             self.logger.error(f"Failed to create folder structure. Error: {create_folder_structure_excpetion}")
 
-    def _create_files(self) -> None:
-        """Creates the necessary files."""
+    def _create_level_0_structure(self) -> None:
+        """Creates the necessary files of level 0 (everything in the root folder)."""
 
         # Files that need to be created
         files = [
             self.generated_root / "clean.sh",
-            self.generated_root / "run.sh",
             self.generated_root / "README.md",
-            self.config_dir / "precice-config.xml",
-            self.config_dir / "adapter-config.json"
+            self.generated_root / "precice-config.xml",
         ]
 
-        self.clean, self.run, self.README, self.precice_config, self.adapter_config = files
+        self.clean, self.README, self.precice_config = files
 
         for file in files:
             try:
@@ -51,6 +43,28 @@ class StructureHandler:
             except Exception as create_files_exception:
                 self.logger.error(f"Failed to create file {file}. Error: {create_files_exception}")
 
+    def create_level_1_structure(self, participant: str) -> list[Path]:
+        """ Creates the necessary files of level 1 (everything in the generated sub-folders).
+            :param participant: The participant for which the files should be created."""
+        try:
+            # Create the participant folder
+            participant_folder = self.generated_root / participant
+            participant_folder.mkdir(parents=True, exist_ok=True)
+            self.logger.success(f"Created folder: {participant_folder}")
+
+            # Create the adapter-config.json file
+            adapter_config = participant_folder / "adapter-config.json"
+            adapter_config.touch(exist_ok=True)
+            self.logger.success(f"Created file: {adapter_config}")
+
+            # Create the run.sh file
+            run = participant_folder / "run.sh"
+            run.touch(exist_ok=True)
+            self.logger.success(f"Created file: {run}")
+
+            return [participant_folder, adapter_config, run]
+        except Exception as create_participant_folder_exception:
+            self.logger.error(f"Failed to create folder/file for participant: {participant_folder}. Error: {create_participant_folder_exception}")
 
     def _cleaner(self) -> None:
         """
