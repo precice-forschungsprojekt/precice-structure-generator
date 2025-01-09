@@ -10,7 +10,6 @@ def generated_config():
         os.path.dirname(__file__), 
         '..', 
         '_generated', 
-        'config', 
         'precice-config.xml'
     )
     
