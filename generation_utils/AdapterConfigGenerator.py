@@ -78,7 +78,6 @@ class AdapterConfigGenerator:
 
         # Debug: Print all XML content
         xml_content = etree.tostring(self.root, pretty_print=True).decode()
-        #self.logger.info(f"Full XML content:\n{xml_content}")
 
         # Find the target participant (case-insensitive and partial match)
         participant_elem = None
@@ -156,7 +155,7 @@ class AdapterConfigGenerator:
             # More lenient mesh name validation - remove the strict validation
             interface = {
                 "mesh_name": mesh_name,
-                "patches": [],  # You might want to extract this from geometry or other XML elements
+                "patches": [], 
                 "write_data_names": [],
                 "read_data_names": []
             }
@@ -184,6 +183,8 @@ class AdapterConfigGenerator:
         # Validate that at least one interface was created
         if not self.adapter_config["interfaces"]:
             self.logger.error(f"No valid interfaces found for participant '{self.target_participant}'")      
+
+
     def write_to_file(self) -> None:
         """
         Writes the filled adapter configuration to the specified JSON file.
