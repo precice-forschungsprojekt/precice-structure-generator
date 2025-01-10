@@ -140,7 +140,7 @@ class PS_ExplicitCoupling(PS_CouplingScheme):
         coupling_scheme = self.write_participants_and_coupling_scheme( tag, config, "parallel-explicit" )
 
         i = etree.SubElement(coupling_scheme, "max-timesteps", value=str(self.NrTimeStep))
-        attr = { "value": str(self.Dt),   "valid-digits": "8"}
+        attr = { "value": str(self.Dt)}
         i = etree.SubElement(coupling_scheme, "timestep-length", attr)
 
         # write out the exchange but not the convergence (if empty it will not be written)
@@ -181,7 +181,7 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
         coupling_scheme = self.write_participants_and_coupling_scheme( tag, config, "parallel-implicit" )
 
         i = etree.SubElement(coupling_scheme, "max-timesteps", value = str(self.NrTimeStep))
-        attr = { "value": str(self.Dt),   "valid-digits": "8"}
+        attr = { "value": str(self.Dt)}
         i = etree.SubElement(coupling_scheme, "timestep-length", attr)
         i = etree.SubElement(coupling_scheme, "max-iterations", value=str(self.maxIteration))
         #i = etree.SubElement(coupling_scheme, "extrapolation-order", value=str(self.extrapolation_order))
@@ -202,25 +202,16 @@ class PS_ImplicitPostPropocessing(object):
         # TODO: this should be configurable
         self.name = "IQN-ILS"
         self.precondition_type = "residual-sum"
-        self.initial_relaxation_value = 0.1
-        self.max_used_iterations_value = 50
-        self.timesteps_reused_value = 8
-        self.filter_type = "QR1"
-        self.filter_limit = 1E-6
-        self.post_process_quantities = {} # the quantities that are in the post-processing
+        self.post_process_quantities = {} # the quantities that are in the acceleration
 
     def write_precice_xml_config(self, tag:etree, config, parent): # config: PS_PreCICEConfig
-        """ write out the config XMl file of the post-processing in case of implicit coupling
+        """ write out the config XMl file of the acceleration in case of implicit coupling
             only for explicit coupling (one directional) this should not write out anything """
 
         # TODO: make this configurable ?
 
-        post_processing = etree.SubElement(tag, "post-processing:"+ self.name)
+        post_processing = etree.SubElement(tag, "acceleration:"+ self.name)
         #i = etree.SubElement(post_processing, "preconditioner", type=self.precondition_type)
-        i = etree.SubElement(post_processing, "filter", type=self.filter_type, limit=str(self.filter_limit))
-        i = etree.SubElement(post_processing, "initial-relaxation", value=str(self.initial_relaxation_value))
-        i = etree.SubElement(post_processing, "max-used-iterations", value=str(self.max_used_iterations_value))
-        i = etree.SubElement(post_processing, "timesteps-reused", value=str(self.timesteps_reused_value))
         for q_name in config.coupling_quantities:
             q = config.coupling_quantities[q_name]
             i = etree.SubElement(post_processing, "data", name=q.instance_name, mesh=q.source_mesh_name)

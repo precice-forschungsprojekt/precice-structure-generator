@@ -168,10 +168,6 @@ class PS_PreCICEConfig(object):
 
         precice_configuration_tag = etree.Element("precice-configuration", nsmap=nsmap)
 
-        # TODO: a the moment no logging config
-        log_tag = etree.SubElement(precice_configuration_tag, "log")
-        # possible configs
-        # sink_tag = etree.SubElement(log_tag, "sink", type="stream", output="stdout", enabled="true")
 
         # write out:
         # first get the dimensionality of the coupling
@@ -180,12 +176,6 @@ class PS_PreCICEConfig(object):
             solver = self.solvers[solver_name]
             dimensionality = max ( dimensionality, solver.dimensionality )
             pass
-
-        profiling_tag = etree.SubElement(precice_configuration_tag, "profiling",
-                                         attrib={"synchronize": str(self.sync_mode).lower(), 
-                                                 "mode": "off" if str(self.mode).lower() == "false" else str(self.mode).lower()
-                                                 }
-                                        )
 
         # 1 quantities
         for coupling_quantities_name in self.coupling_quantities:
@@ -317,7 +307,7 @@ class PS_PreCICEConfig(object):
         for a,b in replace_only_list:
             xml_string = xml_string.replace(a, b)
         replace_list = [("data:", "data___"), ("mapping:nearest", "mapping___nearest"), ("m2n:", "m2n___" ),
-                        ("coupling-scheme:","coupling-scheme___"), ("post-processing:", "post-processing___")]
+                        ("coupling-scheme:","coupling-scheme___"), ("acceleration:", "acceleration___")]
         for a,b in replace_list:
             xml_string = xml_string.replace(a, b)
 
