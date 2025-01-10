@@ -1,6 +1,7 @@
 from controller_utils.myutils.UT_PCErrorLogging import UT_PCErrorLogging
 from controller_utils.precice_struct.PS_ParticipantSolver import PS_ParticipantSolver
 from controller_utils.ui_struct.UI_UserInput import UI_UserInput
+from controller_utils.ui_struct.UI_Coupling import UI_CouplingType
 import xml.etree.ElementTree as etree
 
 class PS_CouplingScheme(object):
@@ -165,12 +166,41 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
         # call theinitialization from the UI data structures
         super(PS_ImplicitCoupling, self).init_from_UI(ui_config, conf)
 
-        # TODO: should we add all quantities?
-        # later do delte some quantities from the list?
-        self.acceleration.post_process_quantities = conf.coupling_quantities
+        # Configure acceleration based on coupling type and user preferences
+        # By default, use IQN-ILS for strong interactions
+        self.acceleration.type = "IQN-ILS"
+        
+        # Configure primary data based on coupling quantities
+        for q_name, q in conf.coupling_quantities.items():
+            # Assume the first quantity as primary data
+            if not self.acceleration.primary_data:
+                self.acceleration.primary_data[q.instance_name] = q.source_mesh_name
+            else:
+                # Additional quantities as secondary data
+                self.acceleration.secondary_data[q.instance_name] = q.source_mesh_name
 
+        # Adjust acceleration parameters based on simulation characteristics
         simulation_conf = ui_config.sim_info
+        
+        # Determine acceleration type based on number of coupling quantities and coupling type
+        num_coupling_quantities = len(conf.coupling_quantities)
+        
+        # For multiple coupling quantities or complex coupling types, use more advanced acceleration
+        if num_coupling_quantities > 2 or any(c.coupling_type in [UI_CouplingType.fsi, UI_CouplingType.cht] for c in ui_config.couplings):
+            self.acceleration.type = "IQN-IMVJ"
+            self.acceleration.time_windows_reused = 10
+            self.acceleration.filter_limit = 1e-2
+        
+        # For simple, less coupled simulations, use constant or Aitken
+        elif num_coupling_quantities <= 1:
+            self.acceleration.type = "constant"
+            self.acceleration.relaxation_value = 0.5
+        
+        # Set common parameters
+        self.acceleration.initial_relaxation_qn = 0.1
+        self.acceleration.max_used_iterations = 100
 
+        # Store other simulation parameters
         self.NrTimeStep = simulation_conf.NrTimeStep
         self.Dt = simulation_conf.Dt
 
@@ -199,20 +229,63 @@ class PS_ImplicitAcceleration(object):
     """ class to model the acceleration part of the implicit coupling """
     def __init__(self):
         """ Ctor for the acceleration """
-        self.post_process_quantities = {}
+        # Acceleration type options: 'constant', 'aitken', 'IQN-ILS', 'IQN-IMVJ'
+        self.type = "constant"
+        
+        # Constant under-relaxation parameters
+        self.relaxation_value = 0.5
+        
+        # Aitken under-relaxation parameters
+        self.initial_relaxation = 0.1
+        
+        # Quasi-Newton parameters (IQN-ILS and IQN-IMVJ)
+        self.preconditioner_type = "residual-sum"
+        self.filter_type = "QR2"
+        self.filter_limit = 1e-3
+        self.initial_relaxation_qn = 0.1
+        self.max_used_iterations = 100
+        self.time_windows_reused = 20
+        
+        # Primary and secondary data
+        self.primary_data = {}
+        self.secondary_data = {}
+        
         pass
 
     def write_precice_xml_config(self, coupling_scheme, config, implicit_coupling):
-        """ write out the acceleration """
-        # check if we have any quantities to accelerate
-        if len(self.post_process_quantities) > 0:
-            # TODO: we could add different acceleration methods
-            # for now we just use the first method
-            acceleration_tag = etree.SubElement(coupling_scheme, "acceleration")
-            filter_tag = etree.SubElement(acceleration_tag, "filter", type="constant")
-            for q_name in self.post_process_quantities:
-                q = self.post_process_quantities[q_name]
-                data_tag = etree.SubElement(filter_tag, "data", name=q.instance_name)
-                pass
+        """ write out the acceleration configuration """
+        # Check if we have any quantities to accelerate
+        if len(self.primary_data) > 0 or len(self.secondary_data) > 0:
+            # Create acceleration tag based on type
+            if self.type == "constant":
+                acceleration_tag = etree.SubElement(coupling_scheme, "acceleration:constant")
+                etree.SubElement(acceleration_tag, "relaxation", value=str(self.relaxation_value))
+            
+            elif self.type == "aitken":
+                acceleration_tag = etree.SubElement(coupling_scheme, "acceleration:aitken")
+                # Add primary data
+                for data_name, mesh_name in self.primary_data.items():
+                    etree.SubElement(acceleration_tag, "data", name=data_name, mesh=mesh_name)
+                etree.SubElement(acceleration_tag, "initial-relaxation", value=str(self.initial_relaxation))
+            
+            elif self.type in ["IQN-ILS", "IQN-IMVJ"]:
+                acceleration_tag = etree.SubElement(coupling_scheme, f"acceleration:{self.type}")
+                
+                # Add primary data
+                for data_name, mesh_name in self.primary_data.items():
+                    etree.SubElement(acceleration_tag, "data", name=data_name, mesh=mesh_name)
+                
+                # Add preconditioner
+                etree.SubElement(acceleration_tag, "preconditioner", type=self.preconditioner_type)
+                
+                # Add filter
+                etree.SubElement(acceleration_tag, "filter", type=self.filter_type, limit=str(self.filter_limit))
+                
+                # Add initial relaxation
+                etree.SubElement(acceleration_tag, "initial-relaxation", value=str(self.initial_relaxation_qn))
+                
+                # Add max used iterations and time windows reused
+                etree.SubElement(acceleration_tag, "max-used-iterations", value=str(self.max_used_iterations))
+                etree.SubElement(acceleration_tag, "time-windows-reused", value=str(self.time_windows_reused))
+            
             pass
-        pass
