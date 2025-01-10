@@ -161,7 +161,7 @@ class PS_PreCICEConfig(object):
             "data": "data",
             "mapping": "mapping",
             "coupling-scheme": "coupling-scheme",
-            "post-processing": "post-processing",
+            "acceleration": "acceleration",
             "m2n": "m2n",
             "master": "master"
         }
@@ -317,7 +317,7 @@ class PS_PreCICEConfig(object):
         for a,b in replace_only_list:
             xml_string = xml_string.replace(a, b)
         replace_list = [("data:", "data___"), ("mapping:nearest", "mapping___nearest"), ("m2n:", "m2n___" ),
-                        ("coupling-scheme:","coupling-scheme___"), ("post-processing:", "post-processing___")]
+                        ("coupling-scheme:","coupling-scheme___"), ("acceleration:", "acceleration___")]
         for a,b in replace_list:
             xml_string = xml_string.replace(a, b)
 

@@ -158,7 +158,7 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
         self.maxIteration = 100
         self.relativeConverganceEps = 1E-4
         self.extrapolation_order = 2
-        self.postProcessing = PS_ImplicitPostPropocessing() # this is the postprocessing
+        self.acceleration = PS_ImplicitAcceleration() # this is the postprocessing
         pass
 
     def initFromUI(self, ui_config:UI_UserInput, conf): # conf : PS_PreCICEConfig
@@ -167,7 +167,7 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
 
         # TODO: should we add all quantities?
         # later do delte some quantities from the list?
-        self.postProcessing.post_process_quantities = conf.coupling_quantities
+        self.acceleration.post_process_quantities = conf.coupling_quantities
 
         simulation_conf = ui_config.sim_info
 
@@ -189,39 +189,30 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
         # write out the exchange and the convergance rate
         self.write_exchange_and_convergance(config, coupling_scheme, str(self.relativeConverganceEps))
 
-        # finally we write out the post processing...
-        self.postProcessing.write_precice_xml_config(coupling_scheme, config, self)
+        # finally we write out the acceleration...
+        self.acceleration.write_precice_xml_config(coupling_scheme, config, self)
 
         pass
 
 
-class PS_ImplicitPostPropocessing(object):
-    """ class to model the post processing part of the implicit coupling """
+class PS_ImplicitAcceleration(object):
+    """ class to model the acceleration part of the implicit coupling """
     def __init__(self):
-        """ Ctor for the postprocessing """
-        # TODO: this should be configurable
-        self.name = "IQN-ILS"
-        self.precondition_type = "residual-sum"
-        self.initial_relaxation_value = 0.1
-        self.max_used_iterations_value = 50
-        self.timesteps_reused_value = 8
-        self.filter_type = "QR1"
-        self.filter_limit = 1E-6
-        self.post_process_quantities = {} # the quantities that are in the post-processing
+        """ Ctor for the acceleration """
+        self.post_process_quantities = {}
+        pass
 
-    def write_precice_xml_config(self, tag:etree, config, parent): # config: PS_PreCICEConfig
-        """ write out the config XMl file of the post-processing in case of implicit coupling
-            only for explicit coupling (one directional) this should not write out anything """
-
-        # TODO: make this configurable ?
-
-        post_processing = etree.SubElement(tag, "post-processing:"+ self.name)
-        #i = etree.SubElement(post_processing, "preconditioner", type=self.precondition_type)
-        i = etree.SubElement(post_processing, "filter", type=self.filter_type, limit=str(self.filter_limit))
-        i = etree.SubElement(post_processing, "initial-relaxation", value=str(self.initial_relaxation_value))
-        i = etree.SubElement(post_processing, "max-used-iterations", value=str(self.max_used_iterations_value))
-        i = etree.SubElement(post_processing, "timesteps-reused", value=str(self.timesteps_reused_value))
-        for q_name in config.coupling_quantities:
-            q = config.coupling_quantities[q_name]
-            i = etree.SubElement(post_processing, "data", name=q.instance_name, mesh=q.source_mesh_name)
+    def write_precice_xml_config(self, coupling_scheme, config, implicit_coupling):
+        """ write out the acceleration """
+        # check if we have any quantities to accelerate
+        if len(self.post_process_quantities) > 0:
+            # TODO: we could add different acceleration methods
+            # for now we just use the first method
+            acceleration_tag = etree.SubElement(coupling_scheme, "acceleration")
+            filter_tag = etree.SubElement(acceleration_tag, "filter", type="constant")
+            for q_name in self.post_process_quantities:
+                q = self.post_process_quantities[q_name]
+                data_tag = etree.SubElement(filter_tag, "data", name=q.instance_name)
+                pass
+            pass
         pass
