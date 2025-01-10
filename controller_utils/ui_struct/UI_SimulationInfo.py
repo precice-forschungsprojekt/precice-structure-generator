@@ -21,7 +21,6 @@ class UI_SimulationInfo(object):
         try:
             self.steady = etree["steady-state"]
             self.NrTimeStep = etree["timesteps"]
-            #TODO: Need to change this when Topology is ported
             self.Dt = etree["time-window-size"]
             self.accuracy = etree["accuracy"]
             self.sync_mode = etree.get("synchronize", "on")
