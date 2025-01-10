@@ -141,7 +141,7 @@ class PS_ExplicitCoupling(PS_CouplingScheme):
 
         i = etree.SubElement(coupling_scheme, "max-timesteps", value=str(self.NrTimeStep))
         attr = { "value": str(self.Dt),   "valid-digits": "8"}
-        i = etree.SubElement(coupling_scheme, "timestep-length", attr)
+        i = etree.SubElement(coupling_scheme, "time-window-size", attr)
 
         # write out the exchange but not the convergence (if empty it will not be written)
         self.write_exchange_and_convergance(config, coupling_scheme, "")
@@ -182,7 +182,7 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
 
         i = etree.SubElement(coupling_scheme, "max-timesteps", value = str(self.NrTimeStep))
         attr = { "value": str(self.Dt),   "valid-digits": "8"}
-        i = etree.SubElement(coupling_scheme, "timestep-length", attr)
+        i = etree.SubElement(coupling_scheme, "time-window-size", attr)
         i = etree.SubElement(coupling_scheme, "max-iterations", value=str(self.maxIteration))
         #i = etree.SubElement(coupling_scheme, "extrapolation-order", value=str(self.extrapolation_order))
 
