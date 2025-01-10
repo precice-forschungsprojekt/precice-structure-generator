@@ -14,7 +14,7 @@ The PreCICE Structure Generator is a Python-based utility designed to automate t
 
 ## Prerequisites
 
-- Python 3.7+
+- **Python 3.11** (Required - not compatible with Python 3.8 or earlier)
 - preCICE library
 - Dependencies listed in `requirements.txt`
 
