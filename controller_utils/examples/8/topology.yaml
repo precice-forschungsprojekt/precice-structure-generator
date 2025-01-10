@@ -1,7 +1,7 @@
 simulation:
 
     timesteps: 20
-    timestep-length: 1e-2
+    time-window-size: 1e-2
     steady-state: False
     accuracy: medium
 
