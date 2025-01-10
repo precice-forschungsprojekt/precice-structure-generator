@@ -97,10 +97,12 @@ precice-structure-generator/
 ├── .git/                      # Git version control directory
 │
 ├── controller_utils/          # Utility from controller
-│   ├── examples/
-│   ├── myutils/               # Miscellaneous utilities
 │   ├── precice_struct/        # preCICE configuration structures
+│   │   ├── PS_CouplingScheme.py
+│   │   └── ...
 │   └── ui_struct/             # User interface utilities
+│       ├── UI_SimulationInfo.py
+│       └── ...
 │
 ├── generation_utils/          # Core generation utilities
 │   ├── AdapterConfigGenerator.py
@@ -111,10 +113,11 @@ precice-structure-generator/
 ├── setup_scripts/             # Setup and initialization scripts
 ├── templates/                 # Configuration templates
 ├── tests/                     # Project test suite
-├── tutorials/                 # Extensive tutorials (1135 items!) (from original preCICE)
+├── tutorials/                 # Extensive tutorials (from original preCICE)
 ├── validation/                # Validation modules
 │
 ├── _generated/                # Generated configuration files
+│   └── precice-config.xml     # Example generated configuration
 │
 ├── FileGenerator.py           # Main file generation script
 ├── README.md                  # Project documentation (This file)
