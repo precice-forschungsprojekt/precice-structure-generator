@@ -139,7 +139,7 @@ class PS_ExplicitCoupling(PS_CouplingScheme):
         """ write out the config XMl file """
         coupling_scheme = self.write_participants_and_coupling_scheme( tag, config, "parallel-explicit" )
 
-        i = etree.SubElement(coupling_scheme, "max-timesteps", value=str(self.NrTimeStep))
+        i = etree.SubElement(coupling_scheme, "max-time-windows", value=str(self.NrTimeStep))
         attr = { "value": str(self.Dt),   "valid-digits": "8"}
         i = etree.SubElement(coupling_scheme, "time-window-size", attr)
 
@@ -180,7 +180,7 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
         """ write out the config XMl file """
         coupling_scheme = self.write_participants_and_coupling_scheme( tag, config, "parallel-implicit" )
 
-        i = etree.SubElement(coupling_scheme, "max-timesteps", value = str(self.NrTimeStep))
+        i = etree.SubElement(coupling_scheme, "max-time-windows", value = str(self.NrTimeStep))
         attr = { "value": str(self.Dt),   "valid-digits": "8"}
         i = etree.SubElement(coupling_scheme, "time-window-size", attr)
         i = etree.SubElement(coupling_scheme, "max-iterations", value=str(self.maxIteration))
