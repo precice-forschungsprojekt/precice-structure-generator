@@ -150,7 +150,7 @@ if __name__ == "__main__":
         type=Path, 
         required=False, 
         help="Input topology.yaml file",
-        default=Path("controller_utils/examples/2/topology.yaml")
+        default=Path("controller_utils/examples/1_old/topology.yaml")
     )
     parser.add_argument(
         "-o", "--output-path",
