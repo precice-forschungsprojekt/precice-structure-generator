@@ -18,7 +18,7 @@ class UI_Participant(object):
         # catch the exceptions
         try:
             self.name = participant_name
-            self.solverName = etree["solver"]
+            self.solverName = etree
         except:
             mylog.rep_error("Error in YAML initialization of the Participant.")
         pass

@@ -5,11 +5,8 @@ coupling-scheme:
     accuracy: medium
 
 participants:
-    Fluid:
-        solver: SU2
-
-    Solid:
-        solver: Calculix
+    Fluid: SU2
+    Solid: Calculix
 
 couplings:
     - fsi:
