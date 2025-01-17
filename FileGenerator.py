@@ -94,10 +94,9 @@ class FileGenerator:
         self._generate_static_files(target=self.structure.README,
                                     name="README.md")
 
-    def _generate_run(self, run_sh: Path) -> None:
-        """Generates the run.sh file
-            :param run_sh: Path to the run.sh file"""
-        self._generate_static_files(target=run_sh,
+    def _generate_run(self) -> None:
+        """Generates the run.sh file"""
+        self._generate_static_files(target=self.structure.run,
                                     name="run.sh")
 
     def _generate_clean(self) -> None:
@@ -142,7 +141,7 @@ class FileGenerator:
             adapter_config = target_participant[1]
             run_sh = target_participant[2]
             self._generate_adapter_config(target_participant=participant, adapter_config=adapter_config)
-            self._generate_run(run_sh)
+            self._generate_run()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Takes topology.yaml files as input and writes out needed files to start the precice.")
@@ -151,7 +150,7 @@ if __name__ == "__main__":
         type=Path, 
         required=False, 
         help="Input topology.yaml file",
-        default=Path("controller_utils/examples/1/topology.yaml")
+        default=Path("controller_utils/examples/2/topology.yaml")
     )
     parser.add_argument(
         "-o", "--output-path",
