@@ -7,6 +7,7 @@ from controller_utils.myutils.UT_PCErrorLogging import UT_PCErrorLogging
 from controller_utils.precice_struct import PS_PreCICEConfig
 import argparse
 from generation_utils.FileGeneratorMethods import FileGeneratorMethods
+import precice_config_formatter
 
 
 class FileGenerator:
@@ -51,3 +52,5 @@ if __name__ == "__main__":
     fileGenerator = FileGenerator(args.input_file, args.output_path)
     fileGenerator.methods.generate_level_0()
     fileGenerator.methods.generate_level_1()
+
+    precice_config_formatter.main()
