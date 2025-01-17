@@ -32,40 +32,47 @@ class UI_Coupling(object):
         if name_coupling == "fsi":
             # fsi coupling, meaning we have "fluid" and "structure", implicit coupling
             self.coupling_type = UI_CouplingType.fsi
-            pass
         elif name_coupling == "f2s":
             # fsi coupling, meaning we have "fluid" and "structure", explicit coupling
             self.coupling_type = UI_CouplingType.f2s
-            pass
         elif name_coupling == "cht":
             # conjugate heat transfer -> there we also have fluid and structure
             self.coupling_type = UI_CouplingType.cht
-            pass
         else:
             # Throw an error
             mylog.rep_error("Unknown coupling type:" + name_coupling)
 
-        # print("parse participants")
         # parse all the participants within a coupling
         try:
-            # TODO: we assume that we will have only fluids and structures?
-            # TODO: we should all all of this to a singel list
-            participants_loop = { "fluid" : etree["fluid"]}
-            participants_loop.update({ "structure" : etree["structure"] } )
-            # print(" participants: ", participants_loop)
+            # Check if this is an old-style coupling or a new exchanges-style coupling
+            if "fluid" in etree and "structure" in etree:
+                # Old-style coupling format
+                participants_loop = { "fluid" : etree["fluid"]}
+                participants_loop.update({ "structure" : etree["structure"] } )
+            else:
+                # New exchanges-style format
+                participants_loop = {
+                    "from": {"name": etree["from"], "interface": etree.get("from-patch", "interface")},
+                    "to": {"name": etree["to"], "interface": etree.get("to-patch", "interface")}
+                }
 
             # VERY IMPORTANT: we sort here the keys alphabetically!!!
             # this is an important assumption also in other parts of the code, that the participant1
             # and participant2 are in alphabetical order. example 1) fluid 2) structure at fsi
-            for participant_name in sorted(participants_loop):
-
+            sorted_keys = sorted(participants_loop.keys())
+            for participant_name in sorted_keys:
                 participant = participants_loop[participant_name]
-                # print("participant name=", participant_name)
-                # print("participant data=", participant)
-                participant_real_name = participant["name"]
-                participant_interface = participant["interface"]
+                
+                # Handle both old and new format
+                if isinstance(participant, dict):
+                    participant_real_name = participant["name"]
+                    participant_interface = participant["interface"]
+                else:
+                    participant_real_name = participant
+                    participant_interface = "interface"  # default interface
+
                 partitcip = participants[participant_real_name]
-                partitcip.solver_domain = participant_name # this might be fuild or structure or something else
+                partitcip.solver_domain = participant_name # this might be fluid or structure or something else
                 # add only to the first participant the coupling
                 partitcip.list_of_couplings.append(self)
                 # now link this to one of the participants
@@ -76,8 +83,8 @@ class UI_Coupling(object):
                     self.partitcipant2 = partitcip
                     self.boundaryC2 = participant_interface
 
-        except:
-            mylog.rep_error("Error in YAML initialization of the Coupling name=" + name_coupling + " data:")
+        except Exception as e:
+            mylog.rep_error(f"Error in YAML initialization of the Coupling name={name_coupling} data: {str(e)}")
         pass
 
     def get_first_boundary_code(self, solverName: str):

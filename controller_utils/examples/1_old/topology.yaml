@@ -8,11 +8,16 @@ participants:
     Fluid: SU2
     Solid: Calculix
 
-couplings:
-    - fsi:
-        structure:
-            name: Solid
-            interface: interface
-        fluid:
-            name: Fluid
-            interface: interface  
+exchanges:
+    - from: Fluid
+      from-patch: interface
+      to: Solid
+      to-patch: surface
+      data: Force
+      type: strong
+    - from: Solid
+      from-patch: surface
+      to: Fluid
+      to-patch: interface
+      data: Displacement
+      type: strong

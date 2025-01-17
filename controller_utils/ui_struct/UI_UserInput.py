@@ -47,23 +47,33 @@ class UI_UserInput(object):
             self.participants[participant_name] = new_participant
             pass
 
-        # build the couplings
-        couplings_list = etree["couplings"]
-        for couplings in couplings_list:
-            # new coupling structure of the couplig section
-            # print("coupling name:", couplings)
-            # this will be only one loop always due to the YAML structure
-            for coupling_name in couplings:
-                # print("coupling type = ", coupling_name)
-                coupling_data = couplings[coupling_name]
-                # print("coupling data =",coupling_data)
+        # build the couplings from exchanges
+        # If exchanges exist, use them; otherwise fall back to couplings
+        if "exchanges" in etree:
+            exchanges_list = etree["exchanges"]
+            for exchange in exchanges_list:
                 new_coupling = UI_Coupling()
-                new_coupling.init_from_yaml(coupling_name, coupling_data, self.participants, mylog)
+                # Create a coupling from the exchange information
+                coupling_data = {
+                    "from": exchange["from"],
+                    "to": exchange["to"],
+                    "data": exchange["data"],
+                    "type": exchange.get("type", "strong")
+                }
+                new_coupling.init_from_yaml("fsi", coupling_data, self.participants, mylog)
                 # add the coupling to the list of couplings
                 self.couplings.append(new_coupling)
-
-
-        # mylog.rep_info("End building user input")
-        # build the list of participants
+        elif "couplings" in etree:
+            # Existing code for backward compatibility
+            couplings_list = etree["couplings"]
+            for couplings in couplings_list:
+                for coupling_name in couplings:
+                    coupling_data = couplings[coupling_name]
+                    new_coupling = UI_Coupling()
+                    new_coupling.init_from_yaml(coupling_name, coupling_data, self.participants, mylog)
+                    # add the coupling to the list of couplings
+                    self.couplings.append(new_coupling)
+        else:
+            mylog.rep_error("No exchanges or couplings found in the topology file")
 
         pass
