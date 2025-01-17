@@ -178,14 +178,17 @@ class PS_PreCICEConfig(object):
             pass
 
         # 1 quantities
+        all_quantity_names = set()
         for coupling_quantities_name in self.coupling_quantities:
             coupling_quantity = self.coupling_quantities[coupling_quantities_name]
-            mystr = "scalar"
-            if coupling_quantity.dim > 1:
-                mystr = "vector"
-                pass
-            data_tag = etree.SubElement(precice_configuration_tag, etree.QName("data:"+mystr),
-                                        name=coupling_quantity.instance_name)
+            if coupling_quantity.name not in all_quantity_names:
+                mystr = "scalar"
+                if coupling_quantity.dim > 1:
+                    mystr = "vector"
+                    pass
+                data_tag = etree.SubElement(precice_configuration_tag, etree.QName("data:"+mystr),
+                                            name=coupling_quantity.name)
+                all_quantity_names.add(coupling_quantity.name)
             pass
 
         # 2 meshes
