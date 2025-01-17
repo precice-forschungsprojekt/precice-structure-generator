@@ -14,8 +14,8 @@ participants:
 couplings:
     - fsi:
         structure:
-            name: Calculix
+            name: Solid
             interface: interface
         fluid:
-            name: SU2_CFD
+            name: Fluid
             interface: interface  
