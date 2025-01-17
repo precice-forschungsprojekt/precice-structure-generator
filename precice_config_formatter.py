@@ -37,8 +37,8 @@ def format_precice_config(input_file, output_file=None):
                 # Predefined main groups
                 main_groups = [
                     'log',
-                    'profiling' 
-                    'data', 
+                    'profiling',
+                    'data:', 
                     'mesh', 
                     'participant', 
                     'm2n', 
@@ -61,6 +61,10 @@ def format_precice_config(input_file, output_file=None):
         
         # Add a newline after precice-configuration opening tag
         if stripped.startswith('<precice-configuration>'):
+            formatted_lines.append('')
+        
+        # Add a newline after single-line tags in main groups
+        if stripped.startswith('<') and stripped.endswith('/>') and any(group in stripped for group in main_groups):
             formatted_lines.append('')
     
     # Combine lines
