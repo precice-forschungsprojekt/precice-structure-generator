@@ -5,10 +5,10 @@ coupling-scheme:
     accuracy: medium
 
 participants:
-    SU2_CFD:
+    Fluid:
         solver: SU2
 
-    Calculix:
+    Solid:
         solver: Calculix
 
 couplings:
