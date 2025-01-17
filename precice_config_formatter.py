@@ -54,6 +54,14 @@ def format_precice_config(input_file, output_file=None):
         
         # Add the line
         formatted_lines.append(line)
+        
+        # Add a newline after closing specific tags
+        if stripped.startswith('</') and tag in main_groups:
+            formatted_lines.append('')
+        
+        # Add a newline after precice-configuration opening tag
+        if stripped.startswith('<precice-configuration>'):
+            formatted_lines.append('')
     
     # Combine lines
     formatted_content = '\n'.join(formatted_lines)
