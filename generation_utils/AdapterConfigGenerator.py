@@ -75,30 +75,58 @@ class AdapterConfigGenerator:
         self._get_generated_precice_config()
 
         participant_elem = None
-        for participiant in self.root.findall(".//participant"):
-            if participiant.get("name") == self.target_participant:
-                participant_elem = participiant
+        for participant in self.root.findall(".//participant"):
+            if participant.get("name") == self.target_participant:
+                participant_elem = participant
                 break
 
         if participant_elem is None:
             self.logger.error(f"Participant '{self.target_participant}' not found in precice-config.xml.")
             return
 
+        # Attempt to find read-data and write-data elements
         read_data_elem = participant_elem.find("read-data")
         write_data_elem = participant_elem.find("write-data")
 
-        if read_data_elem is None or write_data_elem is None:
-            self.logger.error(f"Participant '{self.target_participant}' is missing 'read-data' or 'write-data' elements.")
-            return
+        # Log warnings if certain elements are missing
+        if read_data_elem is None:
+            self.logger.warning(f"Participant '{self.target_participant}' is missing a 'read-data' element.")
+        if write_data_elem is None:
+            self.logger.warning(f"Participant '{self.target_participant}' is missing a 'write-data' element.")
 
-        # Update the adapter_config_schema dictionary
+        # Update the adapter_config_schema dictionary according to the new template
         self.adapter_config_schema["participant_name"] = self.target_participant
-        self.adapter_config_schema["interface"]["write_data_name"] = write_data_elem.get("name")
-        self.adapter_config_schema["interface"]["read_data_name"] = read_data_elem.get("name")
-        self.adapter_config_schema["interface"]["coupling_mesh_name"] = read_data_elem.get("mesh_name")
+
+        # Access the first interface in the interfaces list
+        interface_dict = self.adapter_config_schema["interfaces"][0]
+
+        # Initialize write_data_names and read_data_names lists
+        interface_dict["write_data_names"] = []
+        interface_dict["read_data_names"] = []
+
+        # If read_data_elem exists, set mesh_name and read_data_names
+        if read_data_elem is not None:
+            interface_dict["mesh_name"] = read_data_elem.get("mesh_name")
+            read_data_name = read_data_elem.get("name")
+            if read_data_name:
+                interface_dict["read_data_names"].append(read_data_name)
+
+        # If write_data_elem exists, set write_data_names
+        if write_data_elem is not None:
+            write_data_name = write_data_elem.get("name")
+            if write_data_name:
+                interface_dict["write_data_names"].append(write_data_name)
+
+        # Remove keys if their lists are empty
+        if not interface_dict["write_data_names"]:
+            interface_dict.pop("write_data_names")
+        if not interface_dict["read_data_names"]:
+            interface_dict.pop("read_data_names")
 
         self.logger.info("Adapter configuration schema filled out successfully.")
 
+
+        
     def write_to_file(self) -> None:
         """
         Writes the filled adapter configuration schema to the specified JSON file.
