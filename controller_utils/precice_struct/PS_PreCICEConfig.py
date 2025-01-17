@@ -192,12 +192,20 @@ class PS_PreCICEConfig(object):
             pass
 
         # 2 meshes
+        # 2 meshes
+        # For each mesh we specify the dimensionality, and list out the quantities
+        # that are used in the coupling
         for mesh_name in self.meshes:
             mesh = self.meshes[mesh_name]
-            mesh_tag = etree.SubElement(precice_configuration_tag, "mesh", name=mesh.name, dimensions=str(dimensionality))
+            mesh_tag = etree.SubElement(precice_configuration_tag, "mesh", name=mesh.name,
+                                        dimensions=str(dimensionality))
+            # for each quantity in the mesh specify the name of the quantity
+            all_use_data_names = set()
             for quantities_name in mesh.quantities:
                 quant = mesh.quantities[quantities_name]
-                quant_tag = etree.SubElement(mesh_tag, "use-data", name=quant.instance_name)
+                if quant.name not in all_use_data_names:
+                    quant_tag = etree.SubElement(mesh_tag, "use-data", name=quant.name)
+                    all_use_data_names.add(quant.name)
 
         # 3 participants
         for solver_name in self.solvers:
