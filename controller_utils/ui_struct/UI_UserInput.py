@@ -27,7 +27,7 @@ class UI_UserInput(object):
         #todo catch the exceptions here
 
         # build the simulation info
-        simulation_info = etree["simulation"]
+        simulation_info = etree["coupling-scheme"]
 
         # Extract additional parameters
         sync_mode = simulation_info.get("sync-mode", "on")  # Default: "on"

@@ -1,4 +1,4 @@
-simulation:
+coupling-scheme:
     timesteps: 30
     time-window-size: 1e-3
     steady-state: False
