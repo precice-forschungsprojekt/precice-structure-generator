@@ -7,7 +7,7 @@ coupling-scheme:
 participants:
     Fluid: SU2
     Solid: Calculix
-    # Solid2: Calculix
+    Solid2: Calculix
 
 exchanges:
     - from: Fluid
@@ -22,9 +22,9 @@ exchanges:
       to-patch: interface
       data: Displacement
       type: strong
-    # - from: Fluid
-    #   from-patch: interface
-    #   to: Solid2
-    #   to-patch: surface
-    #   data: Force2
-    #   type: strong
+    - from: Fluid
+      from-patch: interface
+      to: Solid2
+      to-patch: surface
+      data: Force2
+      type: strong
