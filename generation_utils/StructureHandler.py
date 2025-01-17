@@ -61,11 +61,11 @@ class StructureHandler:
             self.logger.success(f"Created file: {adapter_config}")
 
             # Create the run.sh file
-            run = participant_folder / "run.sh"
-            run.touch(exist_ok=True)
-            self.logger.success(f"Created file: {run}")
+            self.run = participant_folder / "run.sh"
+            self.run.touch(exist_ok=True)
+            self.logger.success(f"Created file: {self.run}")
 
-            return [participant_folder, adapter_config, run]
+            return [participant_folder, adapter_config, self.run]
         except Exception as create_participant_folder_exception:
             self.logger.error(f"Failed to create folder/file for participant: {participant_folder}. Error: {create_participant_folder_exception}")
 

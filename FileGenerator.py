@@ -94,9 +94,10 @@ class FileGenerator:
         self._generate_static_files(target=self.structure.README,
                                     name="README.md")
 
-    def _generate_run(self) -> None:
-        """Generates the run.sh file"""
-        self._generate_static_files(target=self.structure.run,
+    def _generate_run(self, run_sh: Path) -> None:
+        """Generates the run.sh file
+            :param run_sh: Path to the run.sh file"""
+        self._generate_static_files(target=run_sh,
                                     name="run.sh")
 
     def _generate_clean(self) -> None:
@@ -139,7 +140,9 @@ class FileGenerator:
         for participant in participants:
             target_participant = self.structure.create_level_1_structure(participant)
             adapter_config = target_participant[1]
+            run_sh = target_participant[2]
             self._generate_adapter_config(target_participant=participant, adapter_config=adapter_config)
+            self._generate_run(run_sh)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Takes topology.yaml files as input and writes out needed files to start the precice.")
