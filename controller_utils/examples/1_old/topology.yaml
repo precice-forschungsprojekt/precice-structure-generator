@@ -7,11 +7,9 @@ coupling-scheme:
 participants:
     SU2_CFD:
         solver: SU2
-        solver-type: SU2_CFD
 
     Calculix:
         solver: Calculix
-        solver-type: NL
 
 couplings:
     - fsi:
