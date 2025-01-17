@@ -1,0 +1,23 @@
+simulation:
+    timesteps: 20
+    time-window-size: 1e-3
+    steady-state: False
+    accuracy: medium
+
+participants:
+    SU2_CFD:
+        solver: SU2
+        solver-type: SU2_CFD
+
+    Calculix:
+        solver: Calculix
+        solver-type: NL
+
+couplings:
+    - fsi:
+        structure:
+            name: Calculix
+            interface: interface
+        fluid:
+            name: SU2_CFD
+            interface: interface  
