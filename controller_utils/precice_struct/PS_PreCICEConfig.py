@@ -194,7 +194,7 @@ class PS_PreCICEConfig(object):
             mesh_tag = etree.SubElement(precice_configuration_tag, "mesh", name=mesh.name, dimensions=str(dimensionality))
             for quantities_name in mesh.quantities:
                 quant = mesh.quantities[quantities_name]
-                quant_tag = etree.SubElement(mesh_tag, "user-data", name=quant.instance_name)
+                quant_tag = etree.SubElement(mesh_tag, "use-data", name=quant.instance_name)
 
         # 3 participants
         for solver_name in self.solvers:
