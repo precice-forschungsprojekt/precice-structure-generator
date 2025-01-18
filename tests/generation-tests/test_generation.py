@@ -8,7 +8,7 @@ def test_generate(capsys, example_nr):
     sys.path.append(str(root))
     from FileGenerator import FileGenerator
 
-    # Use example_nr directly without an inner loop
+    # Use example_nr for 8 examples
     topology_file = root / "controller_utils" / "examples" / f"{example_nr}" / "topology.yaml"
     output_path = root
     fileGenerator = FileGenerator(topology_file, output_path)

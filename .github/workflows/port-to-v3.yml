@@ -33,3 +33,7 @@ jobs:
     - name: Run Porting to v3 Tests
       run: |
         python -m pytest tests/test_porting_to_v3.py -s
+    
+    - name: Run Porting of 8 examples
+      run: |
+        python -m pytest tests/test_porting_to_v3.py tests/generation-tests/test_generation.py -s
