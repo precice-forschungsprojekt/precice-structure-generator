@@ -2,20 +2,24 @@ from pathlib import Path
 from generation_utils.Logger import Logger
 from lxml import etree
 import json
+import yaml
 
 class AdapterConfigGenerator:
-    def __init__(self, adapter_config_path: Path, precice_config_path: Path, target_participant: str) -> None:
+    def __init__(self, adapter_config_path: Path, precice_config_path: Path, topology_path: Path, target_participant: str) -> None:
         """
-        Initializes the AdapterConfigGenerator with paths to the adapter config and precice config.
+        Initializes the AdapterConfigGenerator with paths to the adapter config, precice config, and topology file.
 
         Args:
             adapter_config_path (Path): Path to the output adapter-config.json file.
             precice_config_path (Path): Path to the input precice-config.xml file.
+            topology_path (Path): Path to the topology YAML file.
+            target_participant (str): Name of the target participant.
         """
         self.adapter_config_path = adapter_config_path
         self.adapter_config_schema_path = Path(__file__).parent.parent / "templates" / "adapter-config-template.json"
         self.logger = Logger()
         self.precice_config_path = precice_config_path
+        self.topology_path = topology_path
         self.target_participant = target_participant
 
         # Load the JSON template into a dictionary during initialization
@@ -68,11 +72,44 @@ class AdapterConfigGenerator:
         self.root = doc
         self.logger.info("Parsed precice-config.xml successfully.")
 
+    def _load_topology(self):
+        """
+        Loads the topology YAML file and extracts patch information for the target participant.
+
+        Returns:
+            dict: Patch information for the target participant.
+        """
+        try:
+            with open(self.topology_path, 'r', encoding='utf-8') as topology_file:
+                topology = yaml.safe_load(topology_file)
+            
+            # Find the exchange for the target participant
+            for exchange in topology.get('exchanges', []):
+                if exchange.get('to') == self.target_participant:
+                    return {
+                        'from_participant': exchange.get('from'),
+                        'from_patch': exchange.get('from-patch'),
+                        'to_patch': exchange.get('to-patch')
+                    }
+            
+            self.logger.warning(f"No exchange found for participant {self.target_participant}")
+            return None
+        
+        except FileNotFoundError:
+            self.logger.error(f"Topology file not found at {self.topology_path}")
+            return None
+        except yaml.YAMLError as e:
+            self.logger.error(f"Error parsing topology YAML: {e}")
+            return None
+
     def _fill_out_adapter_schema(self):
         """
-        Fills out the adapter configuration schema based on the precice-config.xml data.
+        Fills out the adapter configuration schema based on the precice-config.xml and topology data.
         """
         self._get_generated_precice_config()
+
+        # Load topology information
+        topology_info = self._load_topology()
 
         participant_elem = None
         for participant in self.root.findall(".//participant"):
@@ -116,6 +153,15 @@ class AdapterConfigGenerator:
             write_data_name = write_data_elem.get("name")
             if write_data_name:
                 interface_dict["write_data_names"].append(write_data_name)
+
+        # Add patch information from topology if available
+        if topology_info:
+            # Use the to-patch value from topology
+            interface_dict["patch_name"] = topology_info.get('to_patch')
+            
+            # Optionally, you can also add other topology information
+            interface_dict["from_participant"] = topology_info.get('from_participant')
+            interface_dict["from_patch"] = topology_info.get('from_patch')
 
         # Remove keys if their lists are empty
         if not interface_dict["write_data_names"]:

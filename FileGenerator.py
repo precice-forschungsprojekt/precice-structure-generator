@@ -109,6 +109,7 @@ class FileGenerator:
         """Generates the adapter-config.json file."""
         adapter_config_generator = AdapterConfigGenerator(adapter_config_path=adapter_config,
                                                             precice_config_path=self.structure.precice_config, 
+                                                            topology_path=self.input_file,  
                                                             target_participant=target_participant)
         adapter_config_generator.write_to_file()
     
