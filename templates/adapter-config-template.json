@@ -1,6 +1,6 @@
 {
   "participant_name": null,
-  "config_file_name": "../precice-config.xml",
+  "precice_config_file_name": "../precice-config.xml",
   "interfaces": [
       {
           "mesh_name": null,
