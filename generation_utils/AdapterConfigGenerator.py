@@ -157,11 +157,12 @@ class AdapterConfigGenerator:
         # Add patch information from topology if available
         if topology_info:
             # Use the to-patch value from topology
-            interface_dict["patch_name"] = topology_info.get('to_patch')
+            interface_dict["patches"] = [topology_info.get('to_patch')]
             
-            # Optionally, you can also add other topology information
-            interface_dict["from_participant"] = topology_info.get('from_participant')
-            interface_dict["from_patch"] = topology_info.get('from_patch')
+            # Remove previously added keys
+            interface_dict.pop("from_participant", None)
+            interface_dict.pop("from_patch", None)
+            interface_dict.pop("patch_name", None)  # Remove patch_name if it was added previously
 
         # Remove keys if their lists are empty
         if not interface_dict["write_data_names"]:
