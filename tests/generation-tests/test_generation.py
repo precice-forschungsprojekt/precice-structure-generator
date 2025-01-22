@@ -1,6 +1,9 @@
 import sys
 from pathlib import Path
 import pytest
+import yaml
+import json
+import jsonschema
 
 @pytest.mark.parametrize("example_nr", range(1, 9))
 def test_generate(capsys, example_nr):
@@ -8,9 +11,25 @@ def test_generate(capsys, example_nr):
     sys.path.append(str(root))
     from FileGenerator import FileGenerator
 
+    # Load JSON schema
+    schema_path = root / "schemas" / "topology-schema.json"
+    with open(schema_path, 'r') as schema_file:
+        topology_schema = json.load(schema_file)
+
     # Use example_nr for 8 examples
     topology_file = root / "controller_utils" / "examples" / f"{example_nr}" / "topology.yaml"
     output_path = root
+    
+    # Validate topology file against JSON schema
+    with open(topology_file, 'r') as file:
+        topology_data = yaml.safe_load(file)
+    
+    try:
+        # Validate against JSON schema
+        jsonschema.validate(instance=topology_data, schema=topology_schema)
+    except jsonschema.ValidationError as validation_error:
+        pytest.fail(f"Topology file {topology_file} failed schema validation: {validation_error}")
+
     fileGenerator = FileGenerator(topology_file, output_path)
 
     # Capture and test output of generate_level_0
