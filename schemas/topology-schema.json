@@ -74,6 +74,11 @@
                         "type": "string",
                         "description": "Interface patch name"
                     },
+                    "solver-domain": {
+                        "type": "string",
+                        "description": "Domain of the solver",
+                        "enum": ["fluid", "structure", "heat", "other"]
+                    },
                     "dimensionality": {
                         "type": "integer",
                         "description": "Dimensionality of the solver",
@@ -85,12 +90,62 @@
                         "description": "Nature of the solver",
                         "enum": ["STATIONARY", "TRANSIENT"],
                         "default": "TRANSIENT"
+                    },
+                    "boundary-codes": {
+                        "type": "array",
+                        "description": "Boundary codes for the participant",
+                        "items": {
+                            "type": "integer",
+                            "minimum": -1
+                        },
+                        "maxItems": 2
                     }
                 },
-                "required": ["solver"]
+                "required": ["solver", "solver-type"]
             },
             "minProperties": 1,
             "maxProperties": 10
+        },
+        "couplings": {
+            "type": "array",
+            "description": "List of coupling configurations between participants",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "Type of coupling",
+                        "enum": ["fsi", "cht", "f2s"]
+                    },
+                    "participants": {
+                        "type": "array",
+                        "description": "Participants involved in the coupling",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "Participant name"
+                                },
+                                "interface": {
+                                    "type": "string",
+                                    "description": "Interface patch name"
+                                },
+                                "domain": {
+                                    "type": "string",
+                                    "description": "Solver domain",
+                                    "enum": ["fluid", "structure", "heat"]
+                                }
+                            },
+                            "required": ["name", "interface"]
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                    }
+                },
+                "required": ["type", "participants"]
+            },
+            "maxItems": 10
         },
         "exchanges": {
             "type": "array",
