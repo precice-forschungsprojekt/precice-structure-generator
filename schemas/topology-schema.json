@@ -100,52 +100,31 @@
             "type": "object",
             "description": "Mapping of participant names to their solver configurations",
             "additionalProperties": {
-                "type": "object",
-                "properties": {
-                    "solver": {
-                        "type": "string",
-                        "description": "Name of the solver"
+                "anyOf": [
+                    {
+                        "type": "string"
                     },
-                    "solver-type": {
-                        "type": "string",
-                        "description": "Type of solver",
-                        "enum": ["Fluid", "Solid", "Heat", "NotDefined"]
-                    },
-                    "interface": {
-                        "type": "string",
-                        "description": "Interface patch name"
-                    },
-                    "solver-domain": {
-                        "type": "string",
-                        "description": "Domain of the solver",
-                        "enum": ["fluid", "structure", "heat", "other"]
-                    },
-                    "dimensionality": {
-                        "type": "integer",
-                        "description": "Dimensionality of the solver",
-                        "enum": [1, 2, 3],
-                        "default": 3
-                    },
-                    "nature": {
-                        "type": "string",
-                        "description": "Nature of the solver",
-                        "enum": ["STATIONARY", "TRANSIENT"],
-                        "default": "TRANSIENT"
-                    },
-                    "boundary-codes": {
-                        "type": "array",
-                        "description": "Boundary codes for the participant",
-                        "items": {
-                            "type": "integer",
-                            "minimum": -1
+                    {
+                        "type": "object",
+                        "properties": {
+                            "solver": {"type": "string"},
+                            "solver-type": {"type": "string", 
+                                "enum": ["Fluid", "Solid", "Heat", "NotDefined"]},
+                            "solver-domain": {"type": "string", 
+                                "enum": ["fluid", "structure", "heat", "other"]},
+                            "interface": {"type": "string"},
+                            "dimensionality": {"type": "integer", "enum": [1, 2, 3]},
+                            "nature": {"type": "string", "enum": ["STATIONARY", "TRANSIENT"]},
+                            "boundary-codes": {
+                                "type": "array",
+                                "items": {"type": "integer", "minimum": -1},
+                                "maxItems": 2
+                            }
                         },
-                        "maxItems": 2
+                        "required": ["solver", "solver-type"]
                     }
-                },
-                "required": ["solver", "solver-type"]
-            },
-            "minProperties": 1,
-            "maxProperties": 10
+                ]
+            }
         },
         "couplings": {
             "type": "array",

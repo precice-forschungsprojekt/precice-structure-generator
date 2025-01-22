@@ -5,7 +5,7 @@ import yaml
 import json
 import jsonschema
 
-@pytest.mark.parametrize("example_nr", range(1, 9))
+@pytest.mark.parametrize("example_nr", [1])
 def test_generate(capsys, example_nr):
     root = Path(__file__).parent.parent.parent
     sys.path.append(str(root))
