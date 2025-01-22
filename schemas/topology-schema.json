@@ -1,0 +1,66 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "coupling-scheme": {
+            "type": "object",
+            "properties": {
+                "max-time": {
+                    "type": "number",
+                    "description": "Maximum simulation time"
+                },
+                "time-window-size": {
+                    "type": "number",
+                    "description": "Size of each time window"
+                },
+                "relative-accuracy": {
+                    "type": "number", 
+                    "description": "Relative accuracy for coupling"
+                }
+            },
+            "required": ["max-time", "time-window-size", "relative-accuracy"]
+        },
+        "participants": {
+            "type": "object",
+            "description": "Mapping of participant names to their solver codes",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "exchanges": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "from": {
+                        "type": "string",
+                        "description": "Source participant"
+                    },
+                    "from-patch": {
+                        "type": "string", 
+                        "description": "Source patch/interface name"
+                    },
+                    "to": {
+                        "type": "string",
+                        "description": "Target participant"
+                    },
+                    "to-patch": {
+                        "type": "string",
+                        "description": "Target patch/interface name"
+                    },
+                    "data": {
+                        "type": "string",
+                        "description": "Type of data being exchanged"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": ["strong", "weak"],
+                        "description": "Coupling type"
+                    }
+                },
+                "required": ["from", "from-patch", "to", "to-patch", "data", "type"]
+            }
+        }
+    },
+    "required": ["coupling-scheme", "participants", "exchanges"]
+}
