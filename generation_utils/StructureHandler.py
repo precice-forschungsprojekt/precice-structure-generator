@@ -45,31 +45,18 @@ class StructureHandler:
             except Exception as create_files_exception:
                 self.logger.error(f"Failed to create file {file}. Error: {create_files_exception}")
 
-    def create_level_1_structure(self, participant: str) -> list[Path]:
+    def create_level_1_structure(self, participant: str, user_ui=None) -> list[Path]:
         """ Creates the necessary files of level 1 (everything in the generated sub-folders).
             :param participant: The participant for which the files should be created.
+            :param user_ui: Optional UI_UserInput instance to retrieve participant information
             :return: participant_folder, adapter_config, run"""
         try:
-            # Import required modules
-            from controller_utils.ui_struct.UI_UserInput import UI_UserInput
-            from controller_utils.myutils.UT_PCErrorLogging import UT_PCErrorLogging
-            import yaml
-            from pathlib import Path
-
-            # Use the default topology.yaml file
-            topology_path = Path("controller_utils/examples/1/topology.yaml")
-
-            # Create logger
-            mylog = UT_PCErrorLogging()
-
-            # Initialize UI_UserInput and load from YAML
-            ui_input = UI_UserInput()
-            with open(topology_path, 'r') as file:
-                etree = yaml.safe_load(file)
-                ui_input.init_from_yaml(etree, mylog)
+            # Validate that user_ui is provided
+            if user_ui is None:
+                raise ValueError("user_ui must be provided to create level 1 structure")
 
             # Get the solver name from the participants
-            solver_name = ui_input.participants[participant].solverName.lower()
+            solver_name = user_ui.participants[participant].solverName.lower()
 
             # Create the participant folder with name-solver format
             participant_folder = self.generated_root / f"{participant}-{solver_name}"

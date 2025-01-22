@@ -139,7 +139,7 @@ class FileGenerator:
 
         participants = self._extract_participants()
         for participant in participants:
-            target_participant = self.structure.create_level_1_structure(participant)
+            target_participant = self.structure.create_level_1_structure(participant, self.user_ui)
             adapter_config = target_participant[1]
             run_sh = target_participant[2]
             self._generate_adapter_config(target_participant=participant, adapter_config=adapter_config)
