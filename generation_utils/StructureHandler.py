@@ -50,8 +50,29 @@ class StructureHandler:
             :param participant: The participant for which the files should be created.
             :return: participant_folder, adapter_config, run"""
         try:
-            # Create the participant folder
-            participant_folder = self.generated_root / participant
+            # Import required modules
+            from controller_utils.ui_struct.UI_UserInput import UI_UserInput
+            from controller_utils.myutils.UT_PCErrorLogging import UT_PCErrorLogging
+            import yaml
+            from pathlib import Path
+
+            # Use the default topology.yaml file
+            topology_path = Path("controller_utils/examples/1/topology.yaml")
+
+            # Create logger
+            mylog = UT_PCErrorLogging()
+
+            # Initialize UI_UserInput and load from YAML
+            ui_input = UI_UserInput()
+            with open(topology_path, 'r') as file:
+                etree = yaml.safe_load(file)
+                ui_input.init_from_yaml(etree, mylog)
+
+            # Get the solver name from the participants
+            solver_name = ui_input.participants[participant].solverName.lower()
+
+            # Create the participant folder with name-solver format
+            participant_folder = self.generated_root / f"{participant}-{solver_name}"
             participant_folder.mkdir(parents=True, exist_ok=True)
             self.logger.success(f"Created folder: {participant_folder}")
 
@@ -67,6 +88,8 @@ class StructureHandler:
 
             return [participant_folder, adapter_config, self.run]
         except Exception as create_participant_folder_exception:
+            # Define participant_folder before logging error
+            participant_folder = self.generated_root / participant
             self.logger.error(f"Failed to create folder/file for participant: {participant_folder}. Error: {create_participant_folder_exception}")
 
     def _cleaner(self) -> None:
