@@ -165,15 +165,25 @@ class FileGenerator:
         # Format the precice-config.xml if found
         if precice_config_path:
             self.logger.info("Formatting preCICE configuration...")
-            # self.logger.info(precice_config_path)
             try:
                 result = subprocess.run([sys.executable, 'format_precice_config.py', precice_config_path], 
-                                        check=True, 
+                                        check=False,  
                                         capture_output=True, 
                                         text=True)
-                self.logger.success("preCICE configuration formatted successfully.")
-            except subprocess.CalledProcessError as e:
-                self.logger.error(f"Error formatting preCICE configuration: {e.stderr}")
+                
+                # Check return codes: 0 (success), 2 (file modified)
+                if result.returncode in [0, 2]:
+                    self.logger.success("preCICE configuration formatted successfully.")
+                    if result.returncode == 2:
+                        self.logger.info("Configuration file was modified during formatting.")
+                else:
+                    self.logger.error(f"Unexpected return code: {result.returncode}")
+                    self.logger.error(f"Standard Output: {result.stdout}")
+                    self.logger.error(f"Standard Error: {result.stderr}")
+            
+            except Exception as e:
+                # Catch any unexpected exceptions
+                self.logger.error(f"Unexpected error formatting preCICE configuration: {e}")
         else:
             self.logger.error("No precice-config.xml found to format.")
     
