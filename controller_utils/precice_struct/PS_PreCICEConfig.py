@@ -222,7 +222,7 @@ class PS_PreCICEConfig(object):
                 for q_name in solver.quantities_read:
                     q = solver.quantities_read[q_name]
                     read_tag = etree.SubElement(solver_tag,
-                                                       "read-data", name=q.name, mesh_name=solvers_mesh_name)
+                                                       "read-data", name=q.name, mesh=solvers_mesh_name)
                     for other_solvers_name in q.list_of_solvers:
                         other_solver = q.list_of_solvers[other_solvers_name]
                         # consistent only read
@@ -245,7 +245,7 @@ class PS_PreCICEConfig(object):
                 for q_name in solver.quantities_write:
                     q = solver.quantities_write[q_name]
                     write_tag = etree.SubElement(solver_tag,
-                                                       "write-data", name=q.name, mesh_name=solvers_mesh_name)
+                                                       "write-data", name=q.name, mesh=solvers_mesh_name)
                     for other_solvers_name in q.list_of_solvers:
                         other_solver = q.list_of_solvers[other_solvers_name]
                         # conservative only write
@@ -267,7 +267,7 @@ class PS_PreCICEConfig(object):
                     mapping_string = type_of_the_mapping_read[other_solver_name]
                     other_solver_mesh_name = self.get_mesh_name_by_participants(other_solver_name, solver_name)
                     mapped_tag = etree.SubElement(solver_tag, "mapping:nearest-neighbor", direction = "read",
-                                                  from_ = other_solver_mesh_name, to= solvers_mesh_name,
+                                                  from___ = other_solver_mesh_name, to= solvers_mesh_name,
                                                   constraint = mapping_string)
                     pass
                 # WRITES
