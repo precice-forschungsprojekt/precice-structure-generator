@@ -2,6 +2,47 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
+        "simulation": {
+            "type": "object",
+            "description": "Simulation configuration for legacy and new YAML structures",
+            "properties": {
+                "steady-state": {
+                    "type": "boolean",
+                    "description": "Whether the simulation is in steady-state",
+                    "default": false
+                },
+                "timesteps": {
+                    "type": "integer",
+                    "description": "Number of time steps",
+                    "minimum": 1,
+                    "default": 100
+                },
+                "time-window-size": {
+                    "type": ["number", "string"],
+                    "description": "Size of each time window, supports scientific notation",
+                    "pattern": "^[+-]?([0-9]*[.])?[0-9]+([eE][+-]?[0-9]+)?$",
+                    "default": "1e-3"
+                },
+                "accuracy": {
+                    "type": "string",
+                    "description": "Simulation accuracy level",
+                    "enum": ["low", "medium", "high"],
+                    "default": "medium"
+                },
+                "sync-mode": {
+                    "type": "string",
+                    "description": "Synchronization mode",
+                    "enum": ["on", "off"],
+                    "default": "on"
+                },
+                "mode": {
+                    "type": "string",
+                    "description": "Simulation mode",
+                    "enum": ["fundamental", "advanced"],
+                    "default": "fundamental"
+                }
+            }
+        },
         "coupling-scheme": {
             "type": "object",
             "properties": {
@@ -253,7 +294,14 @@
             }
         }
     },
-    "required": ["coupling-scheme", "participants", "exchanges"],
+    "oneOf": [
+        {
+            "required": ["coupling-scheme", "participants", "exchanges"]
+        },
+        {
+            "required": ["simulation", "participants", "couplings"]
+        }
+    ],
     "additionalProperties": false,
-    "description": "Advanced topology configuration for multi-physics simulations with detailed quantity specifications"
+    "description": "Advanced topology configuration for multi-physics simulations with support for legacy and new YAML structures"
 }
