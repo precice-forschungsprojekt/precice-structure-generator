@@ -148,6 +148,36 @@ class FileGenerator:
             self._generate_adapter_config(target_participant=participant, adapter_config=adapter_config)
             self._generate_run(run_sh)
 
+    def format_precice_config(self, output_path: Path) -> None:
+        """Formats the generated preCICE configuration file."""
+        
+        # Find the precice-config.xml file in the generated directory
+        generated_dir = output_path / '_generated'
+        precice_config_path = None
+        for root, dirs, files in os.walk(generated_dir):
+            for file in files:
+                if file == 'precice-config.xml':
+                    precice_config_path = os.path.join(root, file)
+                    break
+            if precice_config_path:
+                break
+        
+        # Format the precice-config.xml if found
+        if precice_config_path:
+            self.logger.info("Formatting preCICE configuration...")
+            # self.logger.info(precice_config_path)
+            try:
+                result = subprocess.run([sys.executable, 'format_precice_config.py', precice_config_path], 
+                                        check=True, 
+                                        capture_output=True, 
+                                        text=True)
+                self.logger.success("preCICE configuration formatted successfully.")
+            except subprocess.CalledProcessError as e:
+                self.logger.error(f"Error formatting preCICE configuration: {e.stderr}")
+        else:
+            self.logger.error("No precice-config.xml found to format.")
+    
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Takes topology.yaml files as input and writes out needed files to start the precice.")
     parser.add_argument(
@@ -173,28 +203,4 @@ if __name__ == "__main__":
     
     # Format the generated preCICE configuration
 
-    # Find the precice-config.xml file in the generated directory
-    generated_dir = args.output_path / '_generated'
-    precice_config_path = None
-    for root, dirs, files in os.walk(generated_dir):
-        for file in files:
-            if file == 'precice-config.xml':
-                precice_config_path = os.path.join(root, file)
-                break
-        if precice_config_path:
-            break
-    
-    # Format the precice-config.xml if found
-    if precice_config_path:
-        fileGenerator.logger.info("Formatting preCICE configuration...")
-        # fileGenerator.logger.info(precice_config_path)
-        try:
-            result = subprocess.run([sys.executable, 'format_precice_config.py', precice_config_path], 
-                                    check=True, 
-                                    capture_output=True, 
-                                    text=True)
-            fileGenerator.logger.success("preCICE configuration formatted successfully.")
-        except subprocess.CalledProcessError as e:
-            fileGenerator.logger.error(f"Error formatting preCICE configuration: {e.stderr}")
-    else:
-        fileGenerator.logger.error("No precice-config.xml found to format.")
+    fileGenerator.format_precice_config(args.output_path)
