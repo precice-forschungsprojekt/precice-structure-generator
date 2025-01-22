@@ -28,7 +28,7 @@ class PS_PreCICEConfig(object):
         # add always as a prefix the name of the mesh such that it will become unique
         # IMPORTANT: we need to specify the source mesh of the quantity not other mesh
 
-        concat_quantity_name = source_mesh_name + "-" + quantity_name
+        concat_quantity_name = quantity_name
         # print(" Q=", quantity_name, " T=", concat_quantity_name)
         if concat_quantity_name in self.coupling_quantities:
             ret = self.coupling_quantities[concat_quantity_name]
@@ -71,7 +71,7 @@ class PS_PreCICEConfig(object):
         # first participant is the source (provider) of the mesh
         # list = [ participant1, participant2]
         # list.sort()
-        mesh_name = source_participant + "-" + participant2 + "-Mesh"
+        mesh_name = source_participant + "-Mesh"
         return mesh_name
 
     def get_mesh_by_participant_names(self, source_participant:str, participant2:str):

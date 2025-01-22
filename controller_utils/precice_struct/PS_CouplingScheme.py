@@ -36,10 +36,10 @@ class PS_CouplingScheme(object):
                 pass
             # the solver with the higher complexity should be first
             if mycomplexity[0] < mycomplexity[1]:
-                i = etree.SubElement(coupling_scheme, "participant", first=mylist[0],
+                i = etree.SubElement(coupling_scheme, "participants", first=mylist[0],
                                      second=mylist[1])
             else:
-                i = etree.SubElement(coupling_scheme, "participant", first=mylist[1],
+                i = etree.SubElement(coupling_scheme, "participants", first=mylist[1],
                                      second=mylist[0])
         else:
             # TODO: is "multi" good for all
@@ -58,9 +58,9 @@ class PS_CouplingScheme(object):
             for participant_name in config.solvers:
                 participant = config.solvers[participant_name]
                 if participant.name == control_participant_name:
-                    i = etree.SubElement(coupling_scheme, "participant", name=participant_name, control="yes")
+                    i = etree.SubElement(coupling_scheme, "participants", name=participant_name, control="yes")
                 else:
-                    i = etree.SubElement(coupling_scheme, "participant", name=participant_name)
+                    i = etree.SubElement(coupling_scheme, "participants", name=participant_name)
                     pass
                 pass
             pass
