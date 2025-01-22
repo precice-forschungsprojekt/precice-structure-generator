@@ -1,12 +1,15 @@
 from pathlib import Path
 from generation_utils.StructureHandler import StructureHandler
-import yaml
 from generation_utils.Logger import Logger
 from controller_utils.ui_struct.UI_UserInput import UI_UserInput
 from controller_utils.myutils.UT_PCErrorLogging import UT_PCErrorLogging
 from controller_utils.precice_struct import PS_PreCICEConfig
-import argparse
 from generation_utils.AdapterConfigGenerator import AdapterConfigGenerator
+import yaml
+import argparse
+import subprocess
+import os
+import sys
 
 class FileGenerator:
     def __init__(self, input_file: Path, output_path: Path) -> None:
@@ -167,3 +170,31 @@ if __name__ == "__main__":
     fileGenerator = FileGenerator(args.input_file, args.output_path)
     fileGenerator.generate_level_0()
     fileGenerator.generate_level_1()
+    
+    # Format the generated preCICE configuration
+
+    # Find the precice-config.xml file in the generated directory
+    generated_dir = args.output_path / '_generated'
+    precice_config_path = None
+    for root, dirs, files in os.walk(generated_dir):
+        for file in files:
+            if file == 'precice-config.xml':
+                precice_config_path = os.path.join(root, file)
+                break
+        if precice_config_path:
+            break
+    
+    # Format the precice-config.xml if found
+    if precice_config_path:
+        print("Formatting preCICE configuration...")
+        print(precice_config_path)
+        try:
+            result = subprocess.run([sys.executable, 'format_precice_config.py', precice_config_path], 
+                                    check=True, 
+                                    capture_output=True, 
+                                    text=True)
+            print("preCICE configuration formatted successfully.")
+        except subprocess.CalledProcessError as e:
+            print(f"Error formatting preCICE configuration: {e.stderr}")
+    else:
+        print("No precice-config.xml found to format.")
