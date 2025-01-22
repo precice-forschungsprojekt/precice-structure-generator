@@ -31,6 +31,25 @@
                     "enum": ["fundamental", "advanced"],
                     "description": "Simulation mode",
                     "default": "fundamental"
+                },
+                "coupling-type": {
+                    "type": "string",
+                    "enum": ["explicit", "implicit"],
+                    "description": "Type of coupling scheme",
+                    "default": "explicit"
+                },
+                "max-iterations": {
+                    "type": "integer",
+                    "description": "Maximum number of iterations for implicit coupling",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 50
+                },
+                "extrapolation-order": {
+                    "type": "integer",
+                    "description": "Order of extrapolation for implicit coupling",
+                    "enum": [1, 2, 3],
+                    "default": 2
                 }
             },
             "required": ["max-time", "time-window-size", "relative-accuracy"],
@@ -38,13 +57,35 @@
         },
         "participants": {
             "type": "object",
-            "description": "Mapping of participant names to their solver codes",
+            "description": "Mapping of participant names to their solver configurations",
             "additionalProperties": {
-                "type": ["string", "object"],
-                "description": "Solver code or detailed participant configuration",
+                "type": "object",
                 "properties": {
-                    "solver": {"type": "string"},
-                    "interface": {"type": "string"}
+                    "solver": {
+                        "type": "string",
+                        "description": "Name of the solver"
+                    },
+                    "solver-type": {
+                        "type": "string",
+                        "description": "Type of solver",
+                        "enum": ["Fluid", "Solid", "Heat", "NotDefined"]
+                    },
+                    "interface": {
+                        "type": "string",
+                        "description": "Interface patch name"
+                    },
+                    "dimensionality": {
+                        "type": "integer",
+                        "description": "Dimensionality of the solver",
+                        "enum": [1, 2, 3],
+                        "default": 3
+                    },
+                    "nature": {
+                        "type": "string",
+                        "description": "Nature of the solver",
+                        "enum": ["STATIONARY", "TRANSIENT"],
+                        "default": "TRANSIENT"
+                    }
                 },
                 "required": ["solver"]
             },
@@ -85,7 +126,11 @@
                     "data": {
                         "type": "string",
                         "description": "Type of data being exchanged",
-                        "enum": ["Force", "Displacement", "Temperature", "Pressure"],
+                        "enum": [
+                            "Force", "Displacement", 
+                            "Temperature", "HeatTransfer", 
+                            "Pressure", "Velocity"
+                        ],
                         "minLength": 1,
                         "maxLength": 50
                     },
@@ -93,14 +138,27 @@
                         "type": "string",
                         "enum": ["strong", "weak"],
                         "description": "Coupling type"
+                    },
+                    "read-quantities": {
+                        "type": "array",
+                        "description": "Quantities read by the target participant",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "write-quantities": {
+                        "type": "array",
+                        "description": "Quantities written by the source participant",
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 },
-                "required": ["from", "from-patch", "to", "to-patch", "data", "type"],
-                "additionalProperties": false
+                "required": ["from", "from-patch", "to", "to-patch", "data", "type"]
             }
         }
     },
     "required": ["coupling-scheme", "participants", "exchanges"],
     "additionalProperties": false,
-    "description": "Topology configuration for multi-physics simulations"
+    "description": "Advanced topology configuration for multi-physics simulations"
 }
