@@ -143,7 +143,7 @@ class AdapterConfigGenerator:
 
         # If read_data_elem exists, set mesh_name and read_data_names
         if read_data_elem is not None:
-            interface_dict["mesh_name"] = read_data_elem.get("mesh_name")
+            interface_dict["mesh_name"] = read_data_elem.get("mesh")
             read_data_name = read_data_elem.get("name")
             if read_data_name:
                 interface_dict["read_data_names"].append(read_data_name)
