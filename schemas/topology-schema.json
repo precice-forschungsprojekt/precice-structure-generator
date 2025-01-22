@@ -6,16 +6,19 @@
             "type": "object",
             "properties": {
                 "max-time": {
-                    "type": "number",
-                    "description": "Maximum simulation time"
+                    "type": ["number", "string"],
+                    "description": "Maximum simulation time, can be scientific notation",
+                    "pattern": "^[+-]?([0-9]*[.])?[0-9]+([eE][+-]?[0-9]+)?$"
                 },
                 "time-window-size": {
-                    "type": "number",
-                    "description": "Size of each time window"
+                    "type": ["number", "string"],
+                    "description": "Size of each time window, can be scientific notation",
+                    "pattern": "^[+-]?([0-9]*[.])?[0-9]+([eE][+-]?[0-9]+)?$"
                 },
                 "relative-accuracy": {
-                    "type": "number", 
-                    "description": "Relative accuracy for coupling"
+                    "type": ["number", "string"],
+                    "description": "Relative accuracy for coupling, can be scientific notation",
+                    "pattern": "^[+-]?([0-9]*[.])?[0-9]+([eE][+-]?[0-9]+)?$"
                 }
             },
             "required": ["max-time", "time-window-size", "relative-accuracy"]
@@ -25,16 +28,18 @@
             "description": "Mapping of participant names to their solver codes",
             "additionalProperties": {
                 "type": "string"
-            }
+            },
+            "minProperties": 1
         },
         "exchanges": {
             "type": "array",
+            "minItems": 1,
             "items": {
                 "type": "object",
                 "properties": {
                     "from": {
                         "type": "string",
-                        "description": "Source participant"
+                        "description": "Source participant name"
                     },
                     "from-patch": {
                         "type": "string", 
@@ -42,7 +47,7 @@
                     },
                     "to": {
                         "type": "string",
-                        "description": "Target participant"
+                        "description": "Target participant name"
                     },
                     "to-patch": {
                         "type": "string",
