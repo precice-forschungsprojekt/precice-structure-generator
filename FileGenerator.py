@@ -186,15 +186,15 @@ if __name__ == "__main__":
     
     # Format the precice-config.xml if found
     if precice_config_path:
-        print("Formatting preCICE configuration...")
-        print(precice_config_path)
+        fileGenerator.logger.info("Formatting preCICE configuration...")
+        # fileGenerator.logger.info(precice_config_path)
         try:
             result = subprocess.run([sys.executable, 'format_precice_config.py', precice_config_path], 
                                     check=True, 
                                     capture_output=True, 
                                     text=True)
-            print("preCICE configuration formatted successfully.")
+            fileGenerator.logger.success("preCICE configuration formatted successfully.")
         except subprocess.CalledProcessError as e:
-            print(f"Error formatting preCICE configuration: {e.stderr}")
+            fileGenerator.logger.error(f"Error formatting preCICE configuration: {e.stderr}")
     else:
-        print("No precice-config.xml found to format.")
+        fileGenerator.logger.error("No precice-config.xml found to format.")
