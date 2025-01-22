@@ -143,14 +143,54 @@
                         "type": "array",
                         "description": "Quantities read by the target participant",
                         "items": {
-                            "type": "string"
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Force", "Displacement", 
+                                        "Temperature", "HeatTransfer", 
+                                        "Pressure", "Velocity"
+                                    ]
+                                },
+                                "unit": {
+                                    "type": "string",
+                                    "description": "Unit of the quantity"
+                                },
+                                "mapping": {
+                                    "type": "string",
+                                    "enum": ["conservative", "consistent"],
+                                    "description": "Mapping type for the quantity"
+                                }
+                            },
+                            "required": ["name"]
                         }
                     },
                     "write-quantities": {
                         "type": "array",
                         "description": "Quantities written by the source participant",
                         "items": {
-                            "type": "string"
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "enum": [
+                                        "Force", "Displacement", 
+                                        "Temperature", "HeatTransfer", 
+                                        "Pressure", "Velocity"
+                                    ]
+                                },
+                                "unit": {
+                                    "type": "string",
+                                    "description": "Unit of the quantity"
+                                },
+                                "mapping": {
+                                    "type": "string",
+                                    "enum": ["conservative", "consistent"],
+                                    "description": "Mapping type for the quantity"
+                                }
+                            },
+                            "required": ["name"]
                         }
                     }
                 },
@@ -160,5 +200,5 @@
     },
     "required": ["coupling-scheme", "participants", "exchanges"],
     "additionalProperties": false,
-    "description": "Advanced topology configuration for multi-physics simulations"
+    "description": "Advanced topology configuration for multi-physics simulations with detailed quantity specifications"
 }
