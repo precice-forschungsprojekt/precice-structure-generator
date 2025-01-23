@@ -151,16 +151,7 @@ class FileGenerator:
     def format_precice_config(self, output_path: Path) -> None:
         """Formats the generated preCICE configuration file."""
         
-        # Find the precice-config.xml file in the generated directory
-        generated_dir = output_path / '_generated'
-        precice_config_path = None
-        for root, dirs, files in os.walk(generated_dir):
-            for file in files:
-                if file == 'precice-config.xml':
-                    precice_config_path = os.path.join(root, file)
-                    break
-            if precice_config_path:
-                break
+        precice_config_path = self.structure.precice_config
         
         # Format the precice-config.xml if found
         if precice_config_path:
