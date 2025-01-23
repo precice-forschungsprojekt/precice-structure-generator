@@ -5,7 +5,15 @@ import yaml
 import json
 import jsonschema
 
-@pytest.mark.parametrize("example_nr", [1])
+
+def _get_examples():
+    """Get the list of examples as ints in the examples directory"""
+    root = Path(__file__).parent.parent.parent
+    examples_dir = root / "controller_utils" / "examples"
+    return sorted([example.name for example in examples_dir.iterdir() if example.is_dir()])
+
+
+@pytest.mark.parametrize("example_nr", _get_examples())
 def test_generate(capsys, example_nr):
     root = Path(__file__).parent.parent.parent
     sys.path.append(str(root))
