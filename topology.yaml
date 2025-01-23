@@ -1,0 +1,20 @@
+coupling-scheme:
+  max-time: 0.1
+  relative-accuracy: 0.0001
+  time-window-size: 0.001
+exchanges:
+- data: Force
+  from: Fluid
+  from-patch: interface
+  to: Solid
+  to-patch: surface
+  type: strong
+- data: Displacement
+  from: Solid
+  from-patch: surface
+  to: Fluid
+  to-patch: interface
+  type: strong
+participants:
+  Fluid: SU2
+  Solid: Calculix
