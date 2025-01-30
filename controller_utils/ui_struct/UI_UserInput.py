@@ -29,7 +29,7 @@ class UI_UserInput(object):
             self.sim_info.sync_mode = simulation_info.get("sync-mode", "on")
             self.sim_info.mode = simulation_info.get("mode", "fundamental")
             self.sim_info.steady = False
-            self.sim_info.NrTimeStep = 100  # Default or inferred value
+            self.sim_info.NrTimeStep = simulation_info.get("max-time", 1e-3)
             self.sim_info.Dt = simulation_info.get("time-window-size", 1e-3)
             self.sim_info.accuracy = "medium"
 
