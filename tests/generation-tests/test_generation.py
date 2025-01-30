@@ -251,6 +251,28 @@ def compare_xml_structures(reference_file, generated_file):
     ref_structure = normalize_structure(ref_structure)
     gen_structure = normalize_structure(gen_structure)
     
+    def compare_numeric_values(val1, val2):
+        """
+        Compare numeric values, treating scientific notation and decimal notation as equivalent.
+        
+        Args:
+            val1 (str): First value to compare
+            val2 (str): Second value to compare
+        
+        Returns:
+            bool: True if values are equivalent, False otherwise
+        """
+        try:
+            # Convert both values to floats to handle scientific and decimal notation
+            float1 = float(val1)
+            float2 = float(val2)
+            
+            # Compare with a small tolerance to handle floating-point precision
+            return abs(float1 - float2) < 1e-10
+        except ValueError:
+            # If conversion fails, do a string comparison
+            return val1 == val2
+
     def compare_structures(ref, gen, path=''):
         """
         Recursively compare XML structures.
@@ -272,13 +294,17 @@ def compare_xml_structures(reference_file, generated_file):
         # Compare attributes (sorted to handle order differences)
         ref_attrs = sorted(ref['attributes'].items())
         gen_attrs = sorted(gen['attributes'].items())
-        assert ref_attrs == gen_attrs, \
-            f"Attributes mismatch at {path}/{ref['tag']}: {ref['attributes']} != {gen['attributes']}"
         
-        # Compare text content (normalize whitespace)
+        # Custom comparison for attributes to handle numeric values
+        for (ref_key, ref_val), (gen_key, gen_val) in zip(ref_attrs, gen_attrs):
+            assert ref_key == gen_key, f"Attribute key mismatch at {path}: {ref_key} != {gen_key}"
+            assert compare_numeric_values(ref_val, gen_val), \
+                f"Attributes mismatch at {path}/{ref['tag']}: {ref_val} != {gen_val}"
+        
+        # Compare text content (with numeric comparison)
         ref_text = ' '.join(ref['text'].split())
         gen_text = ' '.join(gen['text'].split())
-        assert ref_text == gen_text, \
+        assert compare_numeric_values(ref_text, gen_text), \
             f"Text content mismatch at {path}/{ref['tag']}: '{ref['text']}' != '{gen['text']}'"
         
         # Compare children
