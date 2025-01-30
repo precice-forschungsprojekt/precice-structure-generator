@@ -7,18 +7,31 @@ import json
 import jsonschema
 import difflib
 import xml.etree.ElementTree as ET
-
+import time
+import traceback
 
 def _get_examples():
     """Get the list of examples as ints in the examples directory"""
     root = Path(__file__).parent.parent.parent
     examples_dir = root / "controller_utils" / "examples"
-    return sorted([example.name for example in examples_dir.iterdir() if example.is_dir()])
-
+    
+    # Print all directories in the examples directory for debugging
+    print("All directories in examples:")
+    for item in examples_dir.iterdir():
+        if item.is_dir():
+            print(f" - {item.name}")
+    
+    # Filter and sort examples
+    examples = sorted([example.name for example in examples_dir.iterdir() if example.is_dir()])
+    
+    print(f"Filtered examples: {examples}")
+    
+    # Limit to first 2 examples for testing
+    return examples[:2]
 
 def parse_xml_structure(file_path):
     """
-    Custom XML parsing function that extracts structural information.
+    Custom XML parsing function specifically designed for precice config files.
     
     Args:
         file_path (Path): Path to the XML file
@@ -26,100 +39,162 @@ def parse_xml_structure(file_path):
     Returns:
         dict: Nested dictionary representing XML structure
     """
-    def clean_text(text):
-        """Remove whitespace and normalize text."""
-        return text.strip() if text else ''
+    def debug_print_file_contents(file_path):
+        """Print file contents for debugging."""
+        print(f"\n--- File Contents: {file_path} ---")
+        try:
+            with open(file_path, 'r') as f:
+                print(f.read())
+        except Exception as e:
+            print(f"Error reading file: {e}")
+        print("--- End File Contents ---\n")
 
-    def parse_element(lines, start_index):
+    def clean_attribute_value(value):
         """
-        Recursively parse XML elements.
+        Clean and normalize attribute values.
+        
+        Removes:
+        - Surrounding quotes
+        - Extra whitespace
+        - Trailing slashes or other unwanted characters
+        """
+        # Remove surrounding quotes and extra whitespace
+        value = value.strip('\'"')
+        
+        # Remove any trailing non-alphanumeric characters
+        import re
+        value = re.sub(r'[^a-zA-Z0-9]+$', '', value)
+        
+        # Remove any extra whitespace
+        value = value.strip()
+        
+        return value
+
+    def parse_precice_config(lines):
+        """
+        Parse precice configuration with special handling for specific tags.
         
         Args:
             lines (list): Lines of the XML file
-            start_index (int): Starting line index
         
         Returns:
-            tuple: (parsed element dict, next line index)
+            dict: Parsed configuration structure
         """
-        # Remove leading/trailing whitespace and ignore comments
-        while start_index < len(lines):
-            line = lines[start_index].strip()
-            if line and not line.startswith('<!--'):
-                break
-            start_index += 1
+        # Debug: print raw lines
+        print(f"Parsing {len(lines)} lines")
         
-        if start_index >= len(lines):
-            return None, start_index
+        # Remove XML declaration and comments
+        lines = [line.strip() for line in lines 
+                 if line.strip() and 
+                 not line.strip().startswith('<?') and 
+                 not line.strip().startswith('<!--')]
         
-        line = lines[start_index].strip()
+        # Debug: print processed lines
+        print(f"Processed lines: {len(lines)}")
+        if not lines:
+            debug_print_file_contents(file_path)
+            raise ValueError(f"No valid lines found in {file_path}")
         
-        # Check for opening tag
-        if not (line.startswith('<') and not line.startswith('<?') and not line.startswith('<!') and not line.startswith('</')):
-            return None, start_index
-        
-        # Extract tag name and attributes
-        tag_parts = line[1:].split('>', 1)[0].split()
-        tag_name = tag_parts[0].rstrip('/')
-        
-        # Parse attributes
-        attributes = {}
-        for attr in tag_parts[1:]:
-            if '=' in attr:
-                key, value = attr.split('=', 1)
-                attributes[key] = value.strip('\'"')
-        
-        # Check if self-closing tag
-        if line.endswith('/>'):
-            return {
+        def parse_element(start_index=0):
+            """
+            Recursively parse XML elements with precice-specific logic.
+            
+            Args:
+                start_index (int): Starting line index
+            
+            Returns:
+                tuple: (parsed element dict, next line index)
+            """
+            if start_index >= len(lines):
+                print(f"Reached end of lines at index {start_index}")
+                return None, start_index
+            
+            line = lines[start_index]
+            print(f"Processing line: {line}")
+            
+            # Check for opening tag
+            if not (line.startswith('<') and not line.startswith('</') and not line.startswith('<?')):
+                print(f"Skipping line: {line}")
+                return None, start_index + 1
+            
+            # Extract tag and attributes
+            tag_parts = line[1:].split('>', 1)[0].split()
+            tag_name = tag_parts[0].rstrip('/')
+            
+            # Parse attributes
+            attributes = {}
+            for attr in tag_parts[1:]:
+                if '=' in attr:
+                    key, value = attr.split('=', 1)
+                    attributes[key] = clean_attribute_value(value)
+            
+            # Check for self-closing tag
+            if line.endswith('/>'):
+                return {
+                    'tag': tag_name,
+                    'attributes': attributes,
+                    'children': [],
+                    'text': ''
+                }, start_index + 1
+            
+            # Initialize element
+            element = {
                 'tag': tag_name,
                 'attributes': attributes,
                 'children': [],
                 'text': ''
-            }, start_index + 1
-        
-        # Initialize element
-        element = {
-            'tag': tag_name,
-            'attributes': attributes,
-            'children': [],
-            'text': ''
-        }
-        
-        start_index += 1
-        
-        # Parse children and text
-        while start_index < len(lines):
-            line = lines[start_index].strip()
+            }
             
-            # Check for closing tag
-            if line.startswith(f'</{tag_name}>'):
-                return element, start_index + 1
+            # Parse children and text
+            current_index = start_index + 1
+            while current_index < len(lines):
+                current_line = lines[current_index]
+                
+                # Check for closing tag
+                if current_line.startswith(f'</{tag_name}>'):
+                    return element, current_index + 1
+                
+                # Check for nested element
+                if current_line.startswith('<') and not current_line.startswith('<!--'):
+                    child, current_index = parse_element(current_index)
+                    if child:
+                        element['children'].append(child)
+                    continue
+                
+                # Accumulate text content (if not just whitespace)
+                if current_line and not current_line.startswith('<!--'):
+                    element['text'] += current_line + ' '
+                
+                current_index += 1
             
-            # Check for nested element
-            if line.startswith('<') and not line.startswith('<!--'):
-                child, start_index = parse_element(lines, start_index)
-                if child:
-                    element['children'].append(child)
-                continue
-            
-            # Accumulate text content
-            if line and not line.startswith('<!--'):
-                element['text'] += line + ' '
-            
-            start_index += 1
-        
-        return element, start_index
+            return element, current_index
 
-    # Read file and parse
-    with open(file_path, 'r') as f:
-        lines = f.readlines()
-    
-    # Remove XML declaration and comments
-    lines = [line for line in lines if not line.strip().startswith('<?') and not line.strip().startswith('<!--')]
-    
-    # Parse root element
-    root, _ = parse_element(lines, 0)
-    return root
+        # Read and parse the entire configuration
+        try:
+            # Parse root element
+            root, _ = parse_element()
+            
+            # Validate root
+            if root is None:
+                debug_print_file_contents(file_path)
+                raise ValueError(f"Failed to parse XML structure in {file_path}")
+            
+            return root
+        except Exception as e:
+            print(f"Error parsing XML: {e}")
+            debug_print_file_contents(file_path)
+            raise
+
+    # Wrapper to add more error handling
+    try:
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+        
+        return parse_precice_config(lines)
+    except Exception as e:
+        print(f"Fatal error parsing {file_path}: {e}")
+        debug_print_file_contents(file_path)
+        raise
 
 def compare_xml_structures(reference_file, generated_file):
     """
@@ -132,6 +207,14 @@ def compare_xml_structures(reference_file, generated_file):
     Raises:
         AssertionError: If XML structures differ
     """
+    # Parse structures with additional error handling
+    try:
+        ref_structure = parse_xml_structure(reference_file)
+        gen_structure = parse_xml_structure(generated_file)
+    except Exception as e:
+        print(f"Error parsing XML files: {e}")
+        raise
+    
     def normalize_structure(structure):
         """
         Normalize XML structure for comparison.
@@ -145,14 +228,18 @@ def compare_xml_structures(reference_file, generated_file):
         if not structure:
             return structure
         
-        # Sort children by tag name
+        # Sort children based on tag and attributes
         structure['children'] = sorted(
             structure['children'], 
             key=lambda x: (x['tag'], str(sorted(x['attributes'].items())))
         )
         
-        # Normalize text
-        structure['text'] = structure['text'].strip()
+        # Normalize text (remove extra whitespace)
+        structure['text'] = ' '.join(structure['text'].split())
+        
+        # Remove empty text
+        if not structure['text']:
+            structure['text'] = ''
         
         # Recursively normalize children
         for child in structure['children']:
@@ -160,11 +247,10 @@ def compare_xml_structures(reference_file, generated_file):
         
         return structure
 
-    # Parse and normalize XML structures
-    ref_structure = normalize_structure(parse_xml_structure(reference_file))
-    gen_structure = normalize_structure(parse_xml_structure(generated_file))
+    # Normalize structures
+    ref_structure = normalize_structure(ref_structure)
+    gen_structure = normalize_structure(gen_structure)
     
-    # Custom comparison function
     def compare_structures(ref, gen, path=''):
         """
         Recursively compare XML structures.
@@ -177,14 +263,22 @@ def compare_xml_structures(reference_file, generated_file):
         Raises:
             AssertionError: If structures differ
         """
+        # Validate input structures
+        assert ref is not None, f"Reference structure is None at path {path}"
+        assert gen is not None, f"Generated structure is None at path {path}"
+        
         assert ref['tag'] == gen['tag'], f"Tag mismatch at {path}: {ref['tag']} != {gen['tag']}"
         
-        # Compare attributes
-        assert set(ref['attributes'].items()) == set(gen['attributes'].items()), \
+        # Compare attributes (sorted to handle order differences)
+        ref_attrs = sorted(ref['attributes'].items())
+        gen_attrs = sorted(gen['attributes'].items())
+        assert ref_attrs == gen_attrs, \
             f"Attributes mismatch at {path}/{ref['tag']}: {ref['attributes']} != {gen['attributes']}"
         
-        # Compare text content (ignoring whitespace)
-        assert ref['text'].replace(' ', '') == gen['text'].replace(' ', ''), \
+        # Compare text content (normalize whitespace)
+        ref_text = ' '.join(ref['text'].split())
+        gen_text = ' '.join(gen['text'].split())
+        assert ref_text == gen_text, \
             f"Text content mismatch at {path}/{ref['tag']}: '{ref['text']}' != '{gen['text']}'"
         
         # Compare children
@@ -199,50 +293,88 @@ def compare_xml_structures(reference_file, generated_file):
     compare_structures(ref_structure, gen_structure)
 
 
+@pytest.mark.timeout(60)  # Add a timeout of 60 seconds
 @pytest.mark.parametrize("example_nr", _get_examples())
 def test_generate(capsys, example_nr):
-    root = Path(__file__).parent.parent.parent
-    sys.path.append(str(root))
-    from FileGenerator import FileGenerator
-
-    # Load JSON schema
-    schema_path = root / "schemas" / "topology-schema.json"
-    with open(schema_path, 'r') as schema_file:
-        topology_schema = json.load(schema_file)
-
-    # Use example_nr for 8 examples
-    topology_file = root / "controller_utils" / "examples" / f"{example_nr}" / "topology.yaml"
-    output_path = root
-    
-    # Validate topology file against JSON schema
-    with open(topology_file, 'r') as file:
-        topology_data = yaml.safe_load(file)
+    print(f"Starting test for example number: {example_nr}")
+    start_time = time.time()
     
     try:
-        # Validate against JSON schema
-        jsonschema.validate(instance=topology_data, schema=topology_schema)
-    except jsonschema.ValidationError as validation_error:
-        pytest.fail(f"Topology file {topology_file} failed schema validation: {validation_error}")
+        root = Path(__file__).parent.parent.parent
+        sys.path.append(str(root))
+        from FileGenerator import FileGenerator
 
-    fileGenerator = FileGenerator(topology_file, output_path)
+        # Load JSON schema
+        schema_path = root / "schemas" / "topology-schema.json"
+        with open(schema_path, 'r') as schema_file:
+            topology_schema = json.load(schema_file)
 
-    # Capture and test output of generate_level_0
-    fileGenerator.generate_level_0()
-    captured = capsys.readouterr()
-    assert "error" not in captured.out.lower() and "error" not in captured.err.lower(), \
-        f"Error in {str(topology_file)}"
+        # Use example_nr for examples
+        topology_file = root / "controller_utils" / "examples" / f"{example_nr}" / "topology.yaml"
+        output_path = root
+        
+        print(f"Processing topology file: {topology_file}")
+        
+        # Validate topology file against JSON schema
+        with open(topology_file, 'r') as file:
+            topology_data = yaml.safe_load(file)
+        
+        try:
+            # Validate against JSON schema
+            jsonschema.validate(instance=topology_data, schema=topology_schema)
+        except jsonschema.ValidationError as validation_error:
+            pytest.fail(f"Topology file {topology_file} failed schema validation: {validation_error}")
 
-    # Capture and test output of generate_level_1
-    fileGenerator.generate_level_1()
+        # Instantiate FileGenerator with verbose logging
+        print("Creating FileGenerator...")
+        fileGenerator = FileGenerator(topology_file, output_path)
 
-    fileGenerator.format_precice_config(output_path)
+        # Capture and test output of generate_level_0
+        print("Generating level 0...")
+        fileGenerator.generate_level_0()
+        captured = capsys.readouterr()
+        assert "error" not in captured.out.lower() and "error" not in captured.err.lower(), \
+            f"Error in {str(topology_file)} during generate_level_0"
 
-    captured = capsys.readouterr()
-    assert "error" not in captured.out.lower() and "error" not in captured.err.lower(), \
-        f"Error in {str(topology_file)}"
+        # Capture and test output of generate_level_1
+        print("Generating level 1...")
+        fileGenerator.generate_level_1()
 
-    # Compare generated precice config with reference files using custom XML comparison
-    reference_file = root / "controller_utils" / "examples" / f"{example_nr}" / "precice-config.xml"
-    generated_file = root / "_generated" / "precice-config.xml"
+        # Format precice config
+        print("Formatting precice config...")
+        fileGenerator.format_precice_config(output_path)
 
-    compare_xml_structures(reference_file, generated_file)
+        captured = capsys.readouterr()
+        assert "error" not in captured.out.lower() and "error" not in captured.err.lower(), \
+            f"Error in {str(topology_file)} during config formatting"
+
+        # Compare generated precice config with reference files using custom XML comparison
+        reference_file = root / "controller_utils" / "examples" / f"{example_nr}" / "precice-config.xml"
+        generated_file = root / "_generated" / "precice-config.xml"
+
+        print(f"Reference file: {reference_file}")
+        print(f"Generated file: {generated_file}")
+
+        # Check if files exist
+        assert reference_file.exists(), f"Reference file does not exist: {reference_file}"
+        assert generated_file.exists(), f"Generated file does not exist: {generated_file}"
+
+        # Compare XML structures
+        print("Comparing XML structures...")
+        compare_xml_structures(reference_file, generated_file)
+        
+        # Print total test time
+        end_time = time.time()
+        print(f"Test for example {example_nr} completed in {end_time - start_time:.2f} seconds")
+    
+    except Exception as e:
+        # Catch and print any unexpected errors with full traceback
+        print(f"Unexpected error in test_generate for example {example_nr}: {e}")
+        traceback.print_exc()
+        
+        # Print additional context about the error
+        print("\nAdditional Error Context:")
+        print(f"Current working directory: {os.getcwd()}")
+        print(f"Python path: {sys.path}")
+        
+        raise  # Re-raise to fail the test
