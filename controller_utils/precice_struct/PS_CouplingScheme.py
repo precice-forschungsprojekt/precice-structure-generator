@@ -144,7 +144,7 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
         self.maxIteration = 50
         self.relativeConverganceEps = 1E-4
         self.extrapolation_order = 2
-        self.postProcessing = PS_ImplicitPostPropocessing() # this is the postprocessing
+        self.postProcessing = PS_ImplicitPostProcessing() # this is the postprocessing
         pass
 
     def initFromUI(self, ui_config:UI_UserInput, conf): # conf : PS_PreCICEConfig
@@ -181,7 +181,7 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
         pass
 
 
-class PS_ImplicitPostPropocessing(object):
+class PS_ImplicitPostProcessing(object):
     """ Class to model the post-processing part of the implicit coupling """
     def __init__(self):
         """ Ctor for the postprocessing """
@@ -195,32 +195,35 @@ class PS_ImplicitPostPropocessing(object):
 
         post_processing = etree.SubElement(tag, "acceleration:" + self.name)
 
-        # Find the solver with the minimal complexity (assuming it's the solid solver)
-        simple_solver = None
-        solver_simplicity = -2
-        for q_name in config.coupling_quantities:
-            q = config.coupling_quantities[q_name]
+        # Identify unique solvers and their meshes
+        solver_meshes = {}
+        for q_name, q in config.coupling_quantities.items():
             solver = q.source_solver
-            if solver_simplicity < solver.solver_domain.value:
-                simple_solver = solver
+            if solver.name not in solver_meshes:
+                solver_meshes[solver.name] = set()
+            solver_meshes[solver.name].add(q.source_mesh_name)
 
-        solid_mesh_name = None
-        for q_name in config.coupling_quantities:
-            q = config.coupling_quantities[q_name]
-            solver = q.source_solver
+        # Attempt to find the 'simplest' solver (e.g., solid solver)
+        # This is a heuristic and might need adjustment based on specific use cases
+        def solver_complexity(solver_name):
+            complexity_map = {
+                'solid': 1,
+                'structural': 1,
+                'fluid': 2,
+                'thermal': 3
+            }
+            return complexity_map.get(solver_name.lower(), 10)
 
-            # Determine the mesh name dynamically
-            mesh_name = q.source_mesh_name
-            for oq in q.list_of_solvers:
-                other_solver = q.list_of_solvers[oq]
-                if other_solver.name != solver.name and other_solver.name == simple_solver.name:
-                    for other_mesh in other_solver.meshes:
-                        if other_mesh != q.source_mesh_name:
-                            mesh_name = other_mesh
-                            solid_mesh_name = mesh_name
-                            break
-
-            if not solid_mesh_name:
-                solid_mesh_name = mesh_name  # fallback if no other mesh found
-
-            i = etree.SubElement(post_processing, "data", name=q.instance_name, mesh=solid_mesh_name)
+        sorted_solvers = sorted(solver_meshes.keys(), key=solver_complexity)
+        
+        # Choose the simplest solver's mesh
+        simple_solver = sorted_solvers[0] if sorted_solvers else None
+        
+        if simple_solver:
+            for q_name, q in config.coupling_quantities.items():
+                # Use the first mesh from the simplest solver
+                mesh_name = list(solver_meshes[simple_solver])[0]
+                
+                i = etree.SubElement(post_processing, "data", 
+                                     name=q.instance_name, 
+                                     mesh=mesh_name)
