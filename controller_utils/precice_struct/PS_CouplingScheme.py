@@ -182,23 +182,45 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
 
 
 class PS_ImplicitPostPropocessing(object):
-    """ class to model the post processing part of the implicit coupling """
+    """ Class to model the post-processing part of the implicit coupling """
     def __init__(self):
         """ Ctor for the postprocessing """
-        # TODO: this should be configurable
         self.name = "IQN-ILS"
         self.precondition_type = "residual-sum"
-        self.post_process_quantities = {} # the quantities that are in the acceleration
+        self.post_process_quantities = {} # The quantities that are in the acceleration
 
-    def write_precice_xml_config(self, tag:etree, config, parent): # config: PS_PreCICEConfig
-        """ write out the config XMl file of the acceleration in case of implicit coupling
-            only for explicit coupling (one directional) this should not write out anything """
+    def write_precice_xml_config(self, tag: etree.Element, config, parent):
+        """ Write out the config XML file of the acceleration in case of implicit coupling
+            Only for explicit coupling (one directional) this should not write out anything """
 
-        # TODO: make this configurable ?
+        post_processing = etree.SubElement(tag, "acceleration:" + self.name)
 
-        post_processing = etree.SubElement(tag, "acceleration:"+ self.name)
-        #i = etree.SubElement(post_processing, "preconditioner", type=self.precondition_type)
+        # Find the solver with the minimal complexity (assuming it's the solid solver)
+        simple_solver = None
+        solver_simplicity = -2
         for q_name in config.coupling_quantities:
             q = config.coupling_quantities[q_name]
-            i = etree.SubElement(post_processing, "data", name=q.instance_name, mesh=q.source_mesh_name)
-        pass
+            solver = q.source_solver
+            if solver_simplicity < solver.solver_domain.value:
+                simple_solver = solver
+
+        solid_mesh_name = None
+        for q_name in config.coupling_quantities:
+            q = config.coupling_quantities[q_name]
+            solver = q.source_solver
+
+            # Determine the mesh name dynamically
+            mesh_name = q.source_mesh_name
+            for oq in q.list_of_solvers:
+                other_solver = q.list_of_solvers[oq]
+                if other_solver.name != solver.name and other_solver.name == simple_solver.name:
+                    for other_mesh in other_solver.meshes:
+                        if other_mesh != q.source_mesh_name:
+                            mesh_name = other_mesh
+                            solid_mesh_name = mesh_name
+                            break
+
+            if not solid_mesh_name:
+                solid_mesh_name = mesh_name  # fallback if no other mesh found
+
+            i = etree.SubElement(post_processing, "data", name=q.instance_name, mesh=solid_mesh_name)
