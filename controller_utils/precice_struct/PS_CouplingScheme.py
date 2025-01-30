@@ -74,20 +74,17 @@ class PS_CouplingScheme(object):
         for q_name in config.coupling_quantities:
             q = config.coupling_quantities[q_name]
             solver = q.source_solver
-            #print(" solver=", solver, " q=", q.name, " i=", q.instance_name, " v=", solver.solver_domain.value)
             if solver_simplicity < solver.solver_domain.value:
                 simple_solver = solver
-                pass
-            pass
-        # For each quantity we specify the exchange and the convergence
+
+        # For each quantity, specify the exchange and the convergence
         for q_name in config.coupling_quantities:
             q = config.coupling_quantities[q_name]
             solver = q.source_solver
 
-            # look for the second solver in the list of solver within the quantity
-            # there should be only two solvers in this list!
+            # look for the second solver in the list of solvers within the quantity
             other_solver_for_coupling = None
-            other_mesh_name = "None" # if we heed the other mesh name not the "real" source
+            other_mesh_name = None  # Initialize other mesh name
             for oq in q.list_of_solvers:
                 other_solver = q.list_of_solvers[oq]
                 if other_solver.name != solver.name:
@@ -97,27 +94,16 @@ class PS_CouplingScheme(object):
                             other_mesh_name = allm
 
             # the from and to attributes
-            from_s = "___"
-            to_s = "__"
-            exchange_mesh_name = q.source_mesh_name
-            if solver.name != simple_solver.name:
-                from_s = solver.name
-                to_s = simple_solver.name
-                exchange_mesh_name = other_mesh_name
-            else:
-                from_s = solver.name
-                to_s = other_solver_for_coupling.name
+            from_s = solver.name
+            to_s = other_solver_for_coupling.name
+            exchange_mesh_name = other_mesh_name if solver.name == simple_solver.name else q.source_mesh_name
 
-            # TODO: the mesh must be the coupled mesh that both participant have
-            # print (" size =" , len( q.list_of_solvers ) )
-            e = etree.SubElement(coupling_scheme, "exchange", data=q_name, mesh=exchange_mesh_name
-                                 ,from___ = from_s, to=to_s)
-            # TODO: here the oposite from above
+            e = etree.SubElement(coupling_scheme, "exchange", data=q_name, mesh=exchange_mesh_name,
+                                from___=from_s, to=to_s)
+
             if relative_conv_str != "":
                 c = etree.SubElement(coupling_scheme, "relative-convergence-measure",
-                                 limit=relative_conv_str, mesh=exchange_mesh_name
-                                 ,data=q_name)
-            pass
+                                    limit=relative_conv_str, mesh=exchange_mesh_name, data=q_name)
 
 
 class PS_ExplicitCoupling(PS_CouplingScheme):
