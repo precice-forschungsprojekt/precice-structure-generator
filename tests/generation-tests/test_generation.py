@@ -1,4 +1,5 @@
 import sys
+import os
 from pathlib import Path
 import pytest
 import yaml
@@ -48,6 +49,27 @@ def test_generate(capsys, example_nr):
 
     # Capture and test output of generate_level_1
     fileGenerator.generate_level_1()
+
+    fileGenerator.format_precice_config(output_path)
+    
     captured = capsys.readouterr()
     assert "error" not in captured.out.lower() and "error" not in captured.err.lower(), \
         f"Error in {str(topology_file)}"
+
+    # Compare generated precice config with reference files
+    reference_file = root / "controller_utils" / "examples" / f"{example_nr}" / "precice-config.xml"
+    generated_file = root / "_generated" / "precice-config.xml"
+    
+    with open(reference_file, 'r') as ref_file:
+        reference_lines = ref_file.readlines()
+    
+    with open(generated_file, 'r') as gen_file:
+        generated_lines = gen_file.readlines()
+
+    # Compare line by line, ignoring leading/trailing whitespace and extra spaces within lines
+    for ref_line, gen_line in zip(reference_lines, generated_lines):
+        # Ignore empty lines
+        if ref_line.strip() == "" or gen_line.strip() == "":
+            continue
+        assert ''.join(ref_line.split()) == ''.join(gen_line.split()), \
+            f"Difference found:\nReference: {ref_line}\nGenerated: {gen_line}"
