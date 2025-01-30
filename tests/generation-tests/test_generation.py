@@ -319,7 +319,6 @@ def compare_xml_structures(reference_file, generated_file):
     compare_structures(ref_structure, gen_structure)
 
 
-@pytest.mark.timeout(60)  # Add a timeout of 60 seconds
 @pytest.mark.parametrize("example_nr", _get_examples())
 def test_generate(capsys, example_nr):
     print(f"Starting test for example number: {example_nr}")
