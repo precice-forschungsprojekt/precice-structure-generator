@@ -5,11 +5,9 @@ from controller_utils.ui_struct.UI_UserInput import UI_UserInput
 from controller_utils.myutils.UT_PCErrorLogging import UT_PCErrorLogging
 from controller_utils.precice_struct import PS_PreCICEConfig
 from generation_utils.AdapterConfigGenerator import AdapterConfigGenerator
+from format_precice_config import PrettyPrinter
 import yaml
 import argparse
-import subprocess
-import os
-import sys
 
 class FileGenerator:
     def __init__(self, input_file: Path, output_path: Path) -> None:
@@ -148,35 +146,20 @@ class FileGenerator:
             self._generate_adapter_config(target_participant=participant, adapter_config=adapter_config)
             self._generate_run(run_sh)
 
-    def format_precice_config(self, output_path: Path) -> None:
+    def format_precice_config(self) -> None:
         """Formats the generated preCICE configuration file."""
         
         precice_config_path = self.structure.precice_config
-        
-        # Format the precice-config.xml if found
-        if precice_config_path:
-            self.logger.info("Formatting preCICE configuration...")
-            try:
-                result = subprocess.run([sys.executable, 'format_precice_config.py', precice_config_path], 
-                                        check=False,  
-                                        capture_output=True, 
-                                        text=True)
-                
-                # Check return codes: 0 (success), 2 (file modified)
-                if result.returncode in [0, 2]:
-                    self.logger.success("preCICE configuration formatted successfully.")
-                    if result.returncode == 2:
-                        self.logger.info("Configuration file was modified during formatting.")
-                else:
-                    self.logger.error(f"Unexpected return code: {result.returncode}")
-                    self.logger.error(f"Standard Output: {result.stdout}")
-                    self.logger.error(f"Standard Error: {result.stderr}")
+        # Create an instance of PrettyPrinter.
+        printer = PrettyPrinter(indent='    ', maxwidth=120)
+        # Specify the path to the XML file you want to prettify.
+        try:
+            printer.prettify_file(precice_config_path)
+            self.logger.success("XML file processed successfully.")
+        except Exception as prettifyException:
+            print("An error occurred during XML prettification: ", prettifyException)
             
-            except Exception as e:
-                # Catch any unexpected exceptions
-                self.logger.error(f"Unexpected error formatting preCICE configuration: {e}")
-        else:
-            self.logger.error("No precice-config.xml found to format.")
+        
     
 
 if __name__ == "__main__":
@@ -204,4 +187,4 @@ if __name__ == "__main__":
     
     # Format the generated preCICE configuration
 
-    fileGenerator.format_precice_config(args.output_path)
+    fileGenerator.format_precice_config()
