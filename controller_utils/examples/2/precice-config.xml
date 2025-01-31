@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<precice-configuration>
+
+  <data:vector name="Force"/>
+  <data:vector name="Displacement"/>
+  <data:scalar name="Temperature"/>
+  <data:scalar name="HeatFlux"/>
+  
+  <mesh name="Fluid-Mesh" dimensions="3">
+    <use-data name="Force"/>
+    <use-data name="Displacement"/>
+  </mesh>
+
+  <mesh name="Solid-Mesh" dimensions="3">
+    <use-data name="Displacement"/>
+    <use-data name="Force"/>
+    <use-data name="Temperature"/>
+    <use-data name="HeatFlux"/>
+  </mesh>
+
+  <mesh name="Thermal-Mesh" dimensions="3">
+    <use-data name="Temperature"/>
+    <use-data name="HeatFlux"/>
+  </mesh>
+
+  <participant name="Fluid">
+    <provide-mesh name="Fluid-Mesh"/>
+    <receive-mesh name="Solid-Mesh" from="Solid"/>
+    
+    <write-data name="Force" mesh="Fluid-Mesh"/>
+    <read-data  name="Displacement" mesh="Fluid-Mesh"/>
+    
+    <mapping:nearest-neighbor
+        direction="read"
+        from="Solid-Mesh" to="Fluid-Mesh"
+        constraint="consistent" />
+    <mapping:nearest-neighbor
+        direction="write"
+        from="Fluid-Mesh" to="Solid-Mesh"
+        constraint="conservative" />
+  </participant>
+
+  <participant name="Solid">
+    <provide-mesh name="Solid-Mesh"/>
+    <receive-mesh name="Fluid-Mesh" from="Fluid"/>
+    <receive-mesh name="Thermal-Mesh" from="Thermal"/>
+    
+    <write-data name="Displacement" mesh="Solid-Mesh"/>
+    <read-data  name="Force" mesh="Solid-Mesh"/>
+    <write-data name="HeatFlux" mesh="Solid-Mesh"/>
+    <read-data  name="Temperature" mesh="Solid-Mesh"/>
+    
+    <mapping:nearest-neighbor
+        direction="read"
+        from="Fluid-Mesh" to="Solid-Mesh"
+        constraint="consistent" />
+    <mapping:nearest-neighbor
+        direction="read"
+        from="Thermal-Mesh" to="Solid-Mesh"
+        constraint="consistent" />
+    <mapping:nearest-neighbor
+        direction="write"
+        from="Solid-Mesh" to="Fluid-Mesh"
+        constraint="conservative" />
+    <mapping:nearest-neighbor
+        direction="write"
+        from="Solid-Mesh" to="Thermal-Mesh"
+        constraint="conservative" />
+  </participant>
+
+  <participant name="Thermal">
+    <provide-mesh name="Thermal-Mesh"/>
+    <receive-mesh name="Solid-Mesh" from="Solid"/>
+    
+    <write-data name="Temperature" mesh="Thermal-Mesh"/>
+    <read-data  name="HeatFlux" mesh="Thermal-Mesh"/>
+    
+    <mapping:nearest-neighbor
+        direction="read"
+        from="Solid-Mesh" to="Thermal-Mesh"
+        constraint="consistent" />
+    <mapping:nearest-neighbor
+        direction="write"
+        from="Thermal-Mesh" to="Solid-Mesh"
+        constraint="conservative" />
+  </participant>
+
+  <m2n:sockets acceptor="Fluid" connector="Solid" exchange-directory=".."/>
+  <m2n:sockets acceptor="Solid" connector="Thermal" exchange-directory=".."/>
+  
+  <coupling-scheme:parallel-implicit>
+    <participants first="Fluid" second="Solid" third="Thermal"/>
+    <max-time value="1e-1"/>
+    <time-window-size value="1e-3"/>
+    <exchange data="Force"        mesh="Solid-Mesh" from="Fluid" to="Solid"/>
+    <exchange data="Displacement" mesh="Solid-Mesh" from="Solid" to="Fluid"/>
+    <exchange data="Temperature"  mesh="Solid-Mesh" from="Thermal" to="Solid"/>
+    <exchange data="HeatFlux"     mesh="Solid-Mesh" from="Solid" to="Thermal"/>
+    <max-iterations value="50"/>
+    <relative-convergence-measure limit="1e-4" data="Displacement" mesh="Solid-Mesh"/>
+    <relative-convergence-measure limit="1e-4" data="Force"        mesh="Solid-Mesh"/>
+    <relative-convergence-measure limit="1e-4" data="Temperature"  mesh="Solid-Mesh"/>
+    <relative-convergence-measure limit="1e-4" data="HeatFlux"     mesh="Solid-Mesh"/>
+  </coupling-scheme:parallel-implicit>
+
+</precice-configuration>

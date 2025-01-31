@@ -1,0 +1,18 @@
+{
+  "participant_name": "Thermal",
+  "precice_config_file_name": "../precice-config.xml",
+  "interfaces": [
+    {
+      "mesh_name": "Thermal-Mesh",
+      "patches": [
+        "surface"
+      ],
+      "read_data_names": [
+        "HeatFlux"
+      ],
+      "write_data_names": [
+        "Temperature"
+      ]
+    }
+  ]
+}
