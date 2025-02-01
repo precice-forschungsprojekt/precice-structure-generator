@@ -10,6 +10,11 @@ version = "0.1.0"
 readme = "README.md"
 license = {text = "MIT"}
 
+authors = [
+    { name = "VanLaareN", email = "TODO" },
+    { name = "Toddelismyname", email = "116207910+Toddelismyname@users.noreply.github.com" }
+]
+
 requires-python = ">= 3.10"
 dependencies = [
     "attrs==24.2.0",
