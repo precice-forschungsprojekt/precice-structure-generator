@@ -259,7 +259,8 @@ class PrettyPrinter():
                 sorted_coupling_children = sorted(
                     group.getchildren(), 
                     key=lambda child: (
-                        0 if str(child.tag) in ['participants', 'max-time', 'time-window-size', 'max-iterations'] else 1,
+                        0 if str(child.tag) in ['participants', 'max-time', 'time-window-size'] else 1,
+                        2 if str(child.tag) == 'max-iterations' else 0,
                         self._get_coupling_scheme_group_type(child)
                     )
                 )
@@ -284,42 +285,42 @@ class PrettyPrinter():
                 # Print coupling-scheme opening tag
                 self.print(self.indent * level + "<{}>".format(group.tag))
                 
-                # Print other elements first
-                for child in other_elements:
+                # Print initial elements
+                initial_elements = [
+                    elem for elem in other_elements 
+                    if str(elem.tag) in ['participants', 'max-time', 'time-window-size']
+                ]
+                for child in initial_elements:
                     self.printElement(child, level + 1)
                 
-                # Print exchanges and convergence measures together
-                if exchange_elements or convergence_elements:
-                    if other_elements:
+                # Print all exchanges
+                if exchange_elements:
+                    if initial_elements:
                         self.print()
-                    
-                    # Group exchanges with their corresponding convergence measures
-                    exchange_groups = {}
                     for exchange in exchange_elements:
-                        key = (exchange.get('data'), exchange.get('mesh'))
-                        if key not in exchange_groups:
-                            exchange_groups[key] = []
-                        exchange_groups[key].append(exchange)
-                    
-                    for key, exchanges in exchange_groups.items():
-                        for exchange in exchanges:
-                            self.printElement(exchange, level + 1)
-                        
-                        # Find and print corresponding convergence measures
-                        matching_convergence = [
-                            conv for conv in convergence_elements 
-                            if (conv.get('data'), conv.get('mesh')) == key
-                        ]
-                        for conv in matching_convergence:
-                            self.printElement(conv, level + 1)
-                        
-                        # Add newline between different exchange groups
-                        if len(exchange_groups) > 1:
-                            self.print()
+                        self.printElement(exchange, level + 1)
+                
+                # Print max-iterations if present
+                max_iterations = [
+                    elem for elem in other_elements 
+                    if str(elem.tag) == 'max-iterations'
+                ]
+                if max_iterations:
+                    if exchange_elements:
+                        self.print()
+                    for child in max_iterations:
+                        self.printElement(child, level + 1)
+                
+                # Print all convergence measures
+                if convergence_elements:
+                    if exchange_elements or max_iterations:
+                        self.print()
+                    for conv in convergence_elements:
+                        self.printElement(conv, level + 1)
                 
                 # Print acceleration elements
                 if acceleration_elements:
-                    if exchange_elements or convergence_elements:
+                    if convergence_elements or exchange_elements or max_iterations:
                         self.print()
                     for child in acceleration_elements:
                         self.printElement(child, level + 1)
