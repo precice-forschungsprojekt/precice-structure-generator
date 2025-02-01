@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "setuptools_scm>=6.2"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,7 +10,7 @@ version = "0.1.0"
 readme = "README.md"
 license = {text = "MIT"}
 
-requires-python = ">= 3.11"
+requires-python = ">= 3.10"
 dependencies = [
     "attrs==24.2.0",
     "colorama==0.4.6",
@@ -50,4 +50,9 @@ Issues = "https://github.com/precice-forschungsprojekt/PreCICE-Genesis/issues"
 Documentation = "https://github.com/precice-forschungsprojekt/PreCICE-Genesis/blob/main/README.md"
 
 [tool.setuptools]
-packages = ["FileGenerator"]
+py-modules = ["FileGenerator", "format_precice_config"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["*", "generation_utils*", "controller_utils*", "schemas*", "setup_scripts*", "templates*"]
+exclude = ["tests*"]

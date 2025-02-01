@@ -160,9 +160,7 @@ class FileGenerator:
             self.logger.error("An error occurred during XML prettification: ", prettifyException)
             
         
-    
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Takes topology.yaml files as input and writes out needed files to start the precice.")
     parser.add_argument(
         "-f", "--input-file", 
@@ -188,3 +186,6 @@ if __name__ == "__main__":
     # Format the generated preCICE configuration
 
     fileGenerator.format_precice_config()
+
+if __name__ == "__main__":
+    main()
