@@ -60,9 +60,3 @@ py-modules = [
     "controller_utils.myutils.UT_PCErrorLogging",
     "controller_utils.precice_struct"
 ]
-
-[project.authors]
-authors = [
-    { name = "VanLaareN", email = "TODO" },
-    { name = "Toddelismyname", email = "116207910+Toddelismyname@users.noreply.github.com" }
-]
