@@ -1,4 +1,4 @@
-cd setup_scripts/
+cd ..
 python -m venv venv
 source venv/bin/activate
-pip install -e ..
+pip install -e .
