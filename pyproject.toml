@@ -8,7 +8,7 @@ description = "Generates File and Folder Structure, including all of the necessa
 version = "0.1.0"
 
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 
 requires-python = ">= 3.10"
 dependencies = [
@@ -34,10 +34,8 @@ dependencies = [
 ]
 
 [project.authors]
-authors = [
-    {name = "VanLaareN", email = "TODO"},
-    {name = "Toddelismyname", email = "116207910+Toddelismyname@users.noreply.github.com"}
-]
+name = "VanLaareN", email = "TODO"
+name = "Toddelismyname", email = "116207910+Toddelismyname@users.noreply.github.com"
 
 [project.optional-dependencies]
 dev = [
