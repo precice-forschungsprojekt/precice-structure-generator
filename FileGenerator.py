@@ -155,7 +155,7 @@ class FileGenerator:
         # Specify the path to the XML file you want to prettify.
         try:
             printer.prettify_file(precice_config_path)
-            self.logger.success("XML file processed successfully.")
+            self.logger.success(f"Successfully prettified preCICE configuration XML")
         except Exception as prettifyException:
             print("An error occurred during XML prettification: ", prettifyException)
             
