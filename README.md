@@ -1,8 +1,8 @@
-# PreCICE Structure Generator
+# PreCICE-Genesis
 
 ## Project Overview
 
-The PreCICE Structure Generator is a Python-based utility designed to automate the generation of preCICE configuration files from YAML topology descriptions. This tool simplifies the process of setting up multi-physics simulations by transforming user-defined YAML configurations into preCICE-compatible XML configuration files.
+The PreCICE-Genesis is a Python-based utility designed to automate the generation of preCICE configuration files from YAML topology descriptions. This tool simplifies the process of setting up multi-physics simulations by transforming user-defined YAML configurations into preCICE-compatible XML configuration files.
 
 ## Key Features
 
