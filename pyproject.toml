@@ -27,7 +27,7 @@ dependencies = [
     "pytest==8.3.4",
     "PyYAML==6.0.2",
     "referencing==0.35.1",
-    "rpds-py==0.22.1",
+    "rpds-py==0.18.0",
     "termcolor==2.5.0",
     "tomli==2.2.1",
     "xmltodict==0.14.2",
