@@ -20,34 +20,63 @@ The PreCICE-Genesis is a Python-based utility designed to automate the generatio
 
 ## Installation
 
-1. Clone the repository:
+### Prerequisites
+- Python 3.10 or higher
+- pip
+- venv
+
+### Manual Installation
+
+1. Clone the repository
 ```bash
-git clone https://github.com/your-organization/precice-structure-generator.git
+git clone https://github.com/precice-forschungsprojekt/PreCICE-Genesis.git
 cd precice-structure-generator
 ```
 
-2. Execute the setup script for your system inside the setup_scripts directory:
+2. Create a virtual environment
 ```bash
-./setup_scripts/install_dependencies.sh
-#or
-./setup_scripts/install_dependencies.ps1
+# On Unix/macOS
+python -m venv venv
+source venv/bin/activate
+
+# On Windows
+python -m venv venv
+.\venv\Scripts\activate
 ```
 
-3. Alternatively,  if you like to do it manually:
+3. Install the project
+```bash
+# Upgrade pip and install build tools
+python -m pip install --upgrade pip
+pip install build
 
-    3.1 Create and activate a virtual environment (recommended):
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-    ```
-    3.2 Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-    3.3 Initialize the submodule:
-    ```bash
-    git submodule update --init	
-    ```
+# Install the project in editable mode
+pip install -e .
+```
+
+### Using Setup Scripts
+
+#### Unix/macOS
+```bash
+./setup_scripts/install_dependencies.sh
+```
+
+#### Windows
+```powershell
+.\setup_scripts\install_dependencies.ps1
+```
+
+### Verifying Installation
+
+1. Run tests
+```bash
+pytest
+```
+
+2. Test the CLI tool
+```bash
+precice-structure-generator --help
+```
 
 ## Usage
 
