@@ -168,6 +168,7 @@ class PrettyPrinter():
                     if str(child.tag) in ['write-mesh', 'read-mesh']:
                         self.print()
                 self.printTagEnd(group, level=level)
+                self.print()
             
             # Special handling for coupling-scheme to pair relative-convergence-measure and exchange
             elif 'coupling-scheme' in str(group.tag):
@@ -183,10 +184,12 @@ class PrettyPrinter():
                 for child in sorted_scheme_children:
                     self.printElement(child, level=level + 1)
                 self.printTagEnd(group, level=level)
+                self.print()
             
             # Default handling for other elements
             else:
                 self.printElement(group, level=level)
+                self.print()
             
             # Add a newline between groups, except for the last group or comments
             if not (isComment(group) or (i == last)):
