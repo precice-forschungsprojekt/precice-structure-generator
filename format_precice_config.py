@@ -52,15 +52,25 @@ class PrettyPrinter():
     """
     def __init__(self, stream=sys.stdout, indent='  ', maxwidth=100, maxgrouplevel=1):
         self.stream = stream      # Output stream (can be a file, StringIO, etc.)
-        self.indent = indent      # String used for indentation
+        self.indent = indent      # String used for indentation (2 spaces)
         self.maxwidth = maxwidth  # Maximum width for a single line
         self.maxgrouplevel = maxgrouplevel  # Maximum depth to group elements on one line
+        self.global_newline_between_groups = True  # Add newline between top-level groups
+        
+        # Specific ordering for top-level elements
+        self.top_level_order = [
+            'data:vector',
+            'mesh',
+            'participant',
+            'm2n:sockets',
+            'coupling-scheme:parallel-implicit'
+        ]
 
-    def print(self, text=''):
+    def print(self, text='', end='\n'):
         """
-        Write text to the output stream followed by a newline.
+        Write text to the output stream with optional end character.
         """
-        self.stream.write(text + '\n')
+        self.stream.write(text + end)
 
     def fmtAttrH(self, element):
         """
@@ -79,7 +89,7 @@ class PrettyPrinter():
         """
         Print the XML declaration at the beginning of the file.
         """
-        self.print('<?xml version="{}" encoding="{}" ?>'.format(
+        self.print('<?xml version="{}" encoding="{}"?>'.format(
             root.docinfo.xml_version, root.docinfo.encoding))
 
     def printRoot(self, root):
@@ -87,43 +97,42 @@ class PrettyPrinter():
         Print the entire XML document starting from the root element.
         """
         self.printXMLDeclaration(root)
+        self.print()  # Add an extra newline after XML declaration
         self.printElement(root.getroot(), level=0)
 
     def printTagStart(self, element, level):
         """
-        Print the start tag of an element.
-        If the element has attributes, decide whether to print them inline or vertically.
+        Print the start tag of an element with precise formatting.
         """
         assert isinstance(element, etree._Element)
-        if element.attrib:
-            # If the estimated length is within maxwidth, print inline.
-            if elementLen(element) + len(self.indent) * level <= self.maxwidth:
+        # Always use self-closing tags for empty elements
+        if not element.getchildren() and element.attrib:
+            self.print("{}<{} {}/>".format(self.indent * level, element.tag, self.fmtAttrH(element)))
+        elif not element.getchildren():
+            self.print("{}<{} />".format(self.indent * level, element.tag))
+        else:
+            # For non-empty elements, use traditional open/close tags
+            if element.attrib:
                 self.print("{}<{} {}>".format(self.indent * level, element.tag, self.fmtAttrH(element)))
             else:
-                # Otherwise, print the tag name on one line and attributes on subsequent lines.
-                self.print("{}<{}".format(self.indent * level, element.tag))
-                self.print("{}>".format(self.fmtAttrV(element, level)))
-        else:
-            self.print("{}<{}>".format(self.indent * level, element.tag))
+                self.print("{}<{}>".format(self.indent * level, element.tag))
 
     def printTagEnd(self, element, level):
         """
         Print the end tag of an element.
         """
         assert isinstance(element, etree._Element)
-        self.print("{}</{}>".format(self.indent * level, element.tag))
+        # Only print end tag for non-empty elements
+        if element.getchildren():
+            self.print("{}</{}>".format(self.indent * level, element.tag))
 
     def printTagEmpty(self, element, level):
         """
-        Print an empty element (no children) with a self-closing tag.
+        Print an empty element with precise self-closing tag formatting.
         """
         assert isinstance(element, etree._Element)
         if element.attrib:
-            if elementLen(element) + len(self.indent) * level <= self.maxwidth:
-                self.print("{}<{} {} />".format(self.indent * level, element.tag, self.fmtAttrH(element)))
-            else:
-                self.print("{}<{}".format(self.indent * level, element.tag))
-                self.print("{} />".format(self.fmtAttrV(element, level)))
+            self.print("{}<{} {}/>".format(self.indent * level, element.tag, self.fmtAttrH(element)))
         else:
             self.print("{}<{} />".format(self.indent * level, element.tag))
 
@@ -152,32 +161,22 @@ class PrettyPrinter():
 
     def printChildren(self, element, level):
         """
-        Print all child elements in a specific order: data, meshes, participants, m2n, coupling scheme.
-        For participants, reorder provide/receive mesh and write/read data.
-        Unknown elements are placed after the specified groups.
+        Print all child elements in a specific order with enhanced formatting.
         """
         if level > self.maxgrouplevel:
             for child in element.getchildren():
                 self.printElement(child, level=level)
             return
 
-        # Define the order of element types with flexible matching
-        order_map = [
-            ('data:', 1),
-            ('mesh', 2),
-            ('participant', 3),
-            ('m2n:', 4),
-            ('coupling-scheme:', 5)
-        ]
-
-        # Sort children based on the predefined order
+        # Custom sorting for top-level elements
         def custom_sort_key(elem):
             tag = str(elem.tag)
-            for prefix, order in order_map:
-                if prefix in tag:
-                    return order
-            return 6  # Any other elements go last
+            try:
+                return self.top_level_order.index(tag)
+            except ValueError:
+                return len(self.top_level_order)
 
+        # Sort children based on the predefined order
         sorted_children = sorted(element.getchildren(), key=custom_sort_key)
 
         last = len(sorted_children)
@@ -199,25 +198,80 @@ class PrettyPrinter():
                     key=lambda child: participant_order.get(str(child.tag), 6)
                 )
                 
+                # Separate different types of elements
+                mesh_elements = []
+                data_elements = []
+                mapping_elements = []
+                
+                for child in sorted_participant_children:
+                    group_type = self._get_participant_group_type(child)
+                    if group_type == 'mesh':
+                        mesh_elements.append(child)
+                    elif group_type == 'data':
+                        data_elements.append(child)
+                    elif group_type == 'mapping':
+                        mapping_elements.append(child)
+                
                 # Temporarily replace group's children with sorted children
                 original_children = list(group.getchildren())
                 for original_child in original_children:
                     group.remove(original_child)
-                for sorted_child in sorted_participant_children:
-                    group.append(sorted_child)
+                
+                # Construct participant tag with attributes
+                participant_tag = "<{}".format(group.tag)
+                for attr, value in group.items():
+                    participant_tag += ' {}="{}"'.format(attr, value)
+                participant_tag += ">"
+                
+                # Print participant opening tag
+                self.print(self.indent * level + participant_tag)
+                
+                # Print mesh elements
+                for child in mesh_elements:
+                    self.printElement(child, level + 1)
+                
+                # Add newline between mesh and data
+                if mesh_elements and data_elements:
+                    self.print()
+                
+                # Print data elements
+                for child in data_elements:
+                    self.printElement(child, level + 1)
+                
+                # Add newline before mapping
+                if data_elements and mapping_elements:
+                    self.print()
+                
+                # Print mapping elements with multi-line formatting
+                for mapping_elem in mapping_elements:
+                    self.print("{}<mapping:nearest-neighbor".format(self.indent * (level + 1)))
+                    for k, v in mapping_elem.items():
+                        self.print("{}{}=\"{}\"".format(self.indent * (level + 2), k, v))
+                    self.print("{} />".format(self.indent * (level + 1)))
+                
+                # Close participant tag
+                self.print("{}</participant>".format(self.indent * level))
+                continue
             
+            # Print the element normally
             self.printElement(group, level=level)
             
-            # Restore original children if we modified a participant
-            if 'participant' in str(group.tag):
-                for sorted_child in sorted_participant_children:
-                    group.remove(sorted_child)
-                for original_child in original_children:
-                    group.append(original_child)
-            
-            # Add an extra newline between groups (except after comments or the last group)
-            if not (isComment(group) or (i == last)):
+            # Add an extra newline between top-level groups
+            if i < last:
                 self.print()
+
+    def _get_participant_group_type(self, element):
+        """
+        Determine the group type for a participant's child element.
+        """
+        tag = str(element.tag)
+        if tag in ['provide-mesh', 'receive-mesh']:
+            return 'mesh'
+        elif tag in ['write-data', 'read-data']:
+            return 'data'
+        elif tag == 'mapping:nearest-neighbor':
+            return 'mapping'
+        return 'other'
 
     @staticmethod
     def parse_xml(content):
