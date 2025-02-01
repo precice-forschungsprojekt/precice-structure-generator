@@ -152,28 +152,37 @@ class PrettyPrinter():
 
     def printChildren(self, element, level):
         """
-        Print all child elements, grouping them if applicable.
+        Print all child elements in a specific order: data, meshes, participants, m2n, coupling scheme.
         """
         if level > self.maxgrouplevel:
             for child in element.getchildren():
                 self.printElement(child, level=level)
             return
 
-        groups1 = itertools.groupby(element.getchildren(), lambda e: str(e.tag).split(':')[0])
-        groups = []
-        for _, group in groups1:
-            group = list(group)
-            if isEmptyTag(group[0]):
-                groups.append(group)
-            else:
-                groups += [[e] for e in group]
+        # Define the order of element types
+        order_map = {
+            'data:': 1,
+            'mesh': 2,
+            'participant': 3,
+            'm2n:': 4,
+            'coupling-scheme:': 5
+        }
 
-        last = len(groups)
-        for i, group in enumerate(groups, start=1):
-            for child in group:
-                self.printElement(child, level=level)
+        # Sort children based on the predefined order
+        def custom_sort_key(elem):
+            tag = str(elem.tag)
+            for prefix, order in order_map.items():
+                if prefix in tag:
+                    return order
+            return 6  # Any other elements go last
+
+        sorted_children = sorted(element.getchildren(), key=custom_sort_key)
+
+        last = len(sorted_children)
+        for i, group in enumerate(sorted_children, start=1):
+            self.printElement(group, level=level)
             # Add an extra newline between groups (except after comments or the last group)
-            if not (isComment(group[0]) or (i == last)):
+            if not (isComment(group) or (i == last)):
                 self.print()
 
     @staticmethod
