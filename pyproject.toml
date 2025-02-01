@@ -11,7 +11,7 @@ readme = "README.md"
 license = {text = "MIT"}
 
 authors = [
-    { name = "VanLaareN", email = "TODO" },
+    { name = "VanLaareN", email = "vanlaren@example.com" },
     { name = "Toddelismyname", email = "116207910+Toddelismyname@users.noreply.github.com" }
 ]
 
