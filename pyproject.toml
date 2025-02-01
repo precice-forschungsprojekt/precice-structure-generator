@@ -33,6 +33,13 @@ dependencies = [
     "xmltodict==0.14.2",
 ]
 
+[project.authors]
+name = "VanLaareN"
+email = "TODO"
+[[project.authors]]
+name = "Toddelismyname"
+email = "116207910+Toddelismyname@users.noreply.github.com"
+
 [project.optional-dependencies]
 dev = [
     "black",
