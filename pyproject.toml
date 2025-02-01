@@ -1,12 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "precice-structure-generator"
+name = "PreCICE-Genesis"
 description = "Generates File and Folder Structure, including all of the necessary files to quickly kickstart a simulation"
-version = "0.0.1"
+version = "0.1.0"
 
 readme = "README.md"
-license = {text = "TODO"}
+license = {text = "MIT"}
 
-requires-python = ">= 3.12"
+requires-python = ">= 3.11"
 dependencies = [
     "attrs==24.2.0",
     "colorama==0.4.6",
@@ -14,6 +18,7 @@ dependencies = [
     "iniconfig==2.0.0",
     "jsonschema==4.23.0",
     "jsonschema-specifications==2024.10.1",
+    "lxml==5.3.0",
     "myutils==0.0.21",
     "packaging==24.2",
     "pip-check-reqs==2.5.3",
@@ -28,6 +33,21 @@ dependencies = [
     "xmltodict==0.14.2",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "black",
+    "isort",
+    "mypy",
+    "pytest-cov",
+]
+
+[project.scripts]
+precice-structure-generator = "FileGenerator:main"
+
 [project.urls]
-Repository = "https://github.com/precice-forschungsprojekt/precice-structure-generator"
-Issues = "https://github.com/precice-forschungsprojekt/precice-structure-generator/issues"
+Repository = "https://github.com/precice-forschungsprojekt/PreCICE-Genesis"
+Issues = "https://github.com/precice-forschungsprojekt/PreCICE-Genesis/issues"
+Documentation = "https://github.com/precice-forschungsprojekt/PreCICE-Genesis/blob/main/README.md"
+
+[tool.setuptools]
+packages = ["FileGenerator"]
