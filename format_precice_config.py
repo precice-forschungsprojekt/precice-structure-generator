@@ -253,6 +253,87 @@ class PrettyPrinter():
                 
                 continue
             
+            # Special handling for coupling-scheme elements
+            if 'coupling-scheme' in str(group.tag):
+                # Sort coupling-scheme children
+                sorted_coupling_children = sorted(
+                    group.getchildren(), 
+                    key=lambda child: (
+                        0 if str(child.tag) in ['participants', 'max-time', 'time-window-size', 'max-iterations'] else 1,
+                        self._get_coupling_scheme_group_type(child)
+                    )
+                )
+                
+                # Separate different types of elements
+                other_elements = []
+                exchange_elements = []
+                convergence_elements = []
+                acceleration_elements = []
+                
+                for child in sorted_coupling_children:
+                    tag = str(child.tag)
+                    if tag == 'exchange':
+                        exchange_elements.append(child)
+                    elif tag == 'relative-convergence-measure':
+                        convergence_elements.append(child)
+                    elif tag == 'acceleration:IQN-ILS':
+                        acceleration_elements.append(child)
+                    else:
+                        other_elements.append(child)
+                
+                # Print coupling-scheme opening tag
+                self.print(self.indent * level + "<{}>".format(group.tag))
+                
+                # Print other elements first
+                for child in other_elements:
+                    self.printElement(child, level + 1)
+                
+                # Print exchanges and convergence measures together
+                if exchange_elements or convergence_elements:
+                    if other_elements:
+                        self.print()
+                    
+                    # Group exchanges with their corresponding convergence measures
+                    exchange_groups = {}
+                    for exchange in exchange_elements:
+                        key = (exchange.get('data'), exchange.get('mesh'))
+                        if key not in exchange_groups:
+                            exchange_groups[key] = []
+                        exchange_groups[key].append(exchange)
+                    
+                    for key, exchanges in exchange_groups.items():
+                        for exchange in exchanges:
+                            self.printElement(exchange, level + 1)
+                        
+                        # Find and print corresponding convergence measures
+                        matching_convergence = [
+                            conv for conv in convergence_elements 
+                            if (conv.get('data'), conv.get('mesh')) == key
+                        ]
+                        for conv in matching_convergence:
+                            self.printElement(conv, level + 1)
+                        
+                        # Add newline between different exchange groups
+                        if len(exchange_groups) > 1:
+                            self.print()
+                
+                # Print acceleration elements
+                if acceleration_elements:
+                    if exchange_elements or convergence_elements:
+                        self.print()
+                    for child in acceleration_elements:
+                        self.printElement(child, level + 1)
+                
+                # Close coupling-scheme tag
+                self.print("{}</{}>"
+                    .format(self.indent * level, group.tag))
+                
+                # Add newline after coupling-scheme if not the last element
+                if i < last:
+                    self.print()
+                
+                continue
+            
             # Print the element normally
             self.printElement(group, level=level)
             
@@ -271,6 +352,17 @@ class PrettyPrinter():
             return 'data'
         elif tag == 'mapping:nearest-neighbor':
             return 'mapping'
+        return 'other'
+
+    def _get_coupling_scheme_group_type(self, element):
+        """
+        Determine the group type for a coupling-scheme's child element.
+        """
+        tag = str(element.tag)
+        if tag == 'exchange':
+            return 'exchange'
+        elif tag == 'relative-convergence-measure':
+            return 'relative-convergence-measure'
         return 'other'
 
     @staticmethod
