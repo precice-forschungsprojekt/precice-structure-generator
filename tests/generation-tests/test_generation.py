@@ -367,7 +367,7 @@ def test_generate(capsys, example_nr):
 
         # Format precice config
         print("Formatting precice config...")
-        fileGenerator.format_precice_config(output_path)
+        fileGenerator.format_precice_config()
 
         captured = capsys.readouterr()
         assert "error" not in captured.out.lower() and "error" not in captured.err.lower(), \
