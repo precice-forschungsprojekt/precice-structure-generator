@@ -74,20 +74,17 @@ class PS_CouplingScheme(object):
         for q_name in config.coupling_quantities:
             q = config.coupling_quantities[q_name]
             solver = q.source_solver
-            #print(" solver=", solver, " q=", q.name, " i=", q.instance_name, " v=", solver.solver_domain.value)
             if solver_simplicity < solver.solver_domain.value:
                 simple_solver = solver
-                pass
-            pass
-        # For each quantity we specify the exchange and the convergence
+
+        # For each quantity, specify the exchange and the convergence
         for q_name in config.coupling_quantities:
             q = config.coupling_quantities[q_name]
             solver = q.source_solver
 
-            # look for the second solver in the list of solver within the quantity
-            # there should be only two solvers in this list!
+            # look for the second solver in the list of solvers within the quantity
             other_solver_for_coupling = None
-            other_mesh_name = "None" # if we heed the other mesh name not the "real" source
+            other_mesh_name = None  # Initialize other mesh name
             for oq in q.list_of_solvers:
                 other_solver = q.list_of_solvers[oq]
                 if other_solver.name != solver.name:
@@ -97,27 +94,16 @@ class PS_CouplingScheme(object):
                             other_mesh_name = allm
 
             # the from and to attributes
-            from_s = "___"
-            to_s = "__"
-            exchange_mesh_name = q.source_mesh_name
-            if solver.name != simple_solver.name:
-                from_s = solver.name
-                to_s = simple_solver.name
-                exchange_mesh_name = other_mesh_name
-            else:
-                from_s = solver.name
-                to_s = other_solver_for_coupling.name
+            from_s = solver.name
+            to_s = other_solver_for_coupling.name
+            exchange_mesh_name = other_mesh_name if solver.name == simple_solver.name else q.source_mesh_name
 
-            # TODO: the mesh must be the coupled mesh that both participant have
-            # print (" size =" , len( q.list_of_solvers ) )
-            e = etree.SubElement(coupling_scheme, "exchange", data=q_name, mesh=exchange_mesh_name
-                                 ,from___ = from_s, to=to_s)
-            # TODO: here the oposite from above
+            e = etree.SubElement(coupling_scheme, "exchange", data=q_name, mesh=exchange_mesh_name,
+                                from___=from_s, to=to_s)
+
             if relative_conv_str != "":
                 c = etree.SubElement(coupling_scheme, "relative-convergence-measure",
-                                 limit=relative_conv_str, mesh=exchange_mesh_name
-                                 ,data=q_name)
-            pass
+                                    limit=relative_conv_str, mesh=exchange_mesh_name, data=q_name)
 
 
 class PS_ExplicitCoupling(PS_CouplingScheme):
@@ -158,7 +144,7 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
         self.maxIteration = 50
         self.relativeConverganceEps = 1E-4
         self.extrapolation_order = 2
-        self.postProcessing = PS_ImplicitPostPropocessing() # this is the postprocessing
+        self.postProcessing = PS_ImplicitPostProcessing() # this is the postprocessing
         pass
 
     def initFromUI(self, ui_config:UI_UserInput, conf): # conf : PS_PreCICEConfig
@@ -195,24 +181,49 @@ class PS_ImplicitCoupling(PS_CouplingScheme):
         pass
 
 
-class PS_ImplicitPostPropocessing(object):
-    """ class to model the post processing part of the implicit coupling """
+class PS_ImplicitPostProcessing(object):
+    """ Class to model the post-processing part of the implicit coupling """
     def __init__(self):
         """ Ctor for the postprocessing """
-        # TODO: this should be configurable
         self.name = "IQN-ILS"
         self.precondition_type = "residual-sum"
-        self.post_process_quantities = {} # the quantities that are in the acceleration
+        self.post_process_quantities = {} # The quantities that are in the acceleration
 
-    def write_precice_xml_config(self, tag:etree, config, parent): # config: PS_PreCICEConfig
-        """ write out the config XMl file of the acceleration in case of implicit coupling
-            only for explicit coupling (one directional) this should not write out anything """
+    def write_precice_xml_config(self, tag: etree.Element, config, parent):
+        """ Write out the config XML file of the acceleration in case of implicit coupling
+            Only for explicit coupling (one directional) this should not write out anything """
 
-        # TODO: make this configurable ?
+        post_processing = etree.SubElement(tag, "acceleration:" + self.name)
 
-        post_processing = etree.SubElement(tag, "acceleration:"+ self.name)
-        #i = etree.SubElement(post_processing, "preconditioner", type=self.precondition_type)
-        for q_name in config.coupling_quantities:
-            q = config.coupling_quantities[q_name]
-            i = etree.SubElement(post_processing, "data", name=q.instance_name, mesh=q.source_mesh_name)
-        pass
+        # Identify unique solvers and their meshes
+        solver_meshes = {}
+        for q_name, q in config.coupling_quantities.items():
+            solver = q.source_solver
+            if solver.name not in solver_meshes:
+                solver_meshes[solver.name] = set()
+            solver_meshes[solver.name].add(q.source_mesh_name)
+
+        # Attempt to find the 'simplest' solver (e.g., solid solver)
+        # This is a heuristic and might need adjustment based on specific use cases
+        def solver_complexity(solver_name):
+            complexity_map = {
+                'solid': 1,
+                'structural': 1,
+                'fluid': 2,
+                'thermal': 3
+            }
+            return complexity_map.get(solver_name.lower(), 10)
+
+        sorted_solvers = sorted(solver_meshes.keys(), key=solver_complexity)
+        
+        # Choose the simplest solver's mesh
+        simple_solver = sorted_solvers[0] if sorted_solvers else None
+        
+        if simple_solver:
+            for q_name, q in config.coupling_quantities.items():
+                # Use the first mesh from the simplest solver
+                mesh_name = list(solver_meshes[simple_solver])[0]
+                
+                i = etree.SubElement(post_processing, "data", 
+                                     name=q.instance_name, 
+                                     mesh=mesh_name)

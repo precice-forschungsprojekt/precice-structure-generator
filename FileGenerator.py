@@ -1,12 +1,13 @@
 from pathlib import Path
 from generation_utils.StructureHandler import StructureHandler
-import yaml
 from generation_utils.Logger import Logger
 from controller_utils.ui_struct.UI_UserInput import UI_UserInput
 from controller_utils.myutils.UT_PCErrorLogging import UT_PCErrorLogging
 from controller_utils.precice_struct import PS_PreCICEConfig
-import argparse
 from generation_utils.AdapterConfigGenerator import AdapterConfigGenerator
+from format_precice_config import PrettyPrinter
+import yaml
+import argparse
 
 class FileGenerator:
     def __init__(self, input_file: Path, output_path: Path) -> None:
@@ -145,6 +146,22 @@ class FileGenerator:
             self._generate_adapter_config(target_participant=participant, adapter_config=adapter_config)
             self._generate_run(run_sh)
 
+    def format_precice_config(self) -> None:
+        """Formats the generated preCICE configuration file."""
+        
+        precice_config_path = self.structure.precice_config
+        # Create an instance of PrettyPrinter.
+        printer = PrettyPrinter(indent='    ', maxwidth=120)
+        # Specify the path to the XML file you want to prettify.
+        try:
+            printer.prettify_file(precice_config_path)
+            self.logger.success(f"Successfully prettified preCICE configuration XML")
+        except Exception as prettifyException:
+            self.logger.error("An error occurred during XML prettification: ", prettifyException)
+            
+        
+    
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Takes topology.yaml files as input and writes out needed files to start the precice.")
     parser.add_argument(
@@ -167,3 +184,7 @@ if __name__ == "__main__":
     fileGenerator = FileGenerator(args.input_file, args.output_path)
     fileGenerator.generate_level_0()
     fileGenerator.generate_level_1()
+    
+    # Format the generated preCICE configuration
+
+    fileGenerator.format_precice_config()
