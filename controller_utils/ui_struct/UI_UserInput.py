@@ -22,30 +22,44 @@ class UI_UserInput(object):
         pass
 
     def init_from_yaml(self, etree, mylog: UT_PCErrorLogging):
+        # Remove any BOM or non-standard keys
+        cleaned_etree = {}
+        for key, value in etree.items():
+            # Remove BOM characters and non-ASCII characters from key
+            clean_key = key.encode('ascii', 'ignore').decode('ascii').replace('\ufeff', '').strip()
+            
+            # Normalize keys to remove any unexpected characters
+            if clean_key:  # Only add non-empty keys
+                cleaned_etree[clean_key] = value
+        
+        # Fallback to original etree if cleaning removed all keys
+        if not cleaned_etree:
+            cleaned_etree = etree
+
         # Check if using new topology structure
-        if "coupling-scheme" in etree and "participants" in etree and "exchanges" in etree:
+        if "coupling-scheme" in cleaned_etree and "participants" in cleaned_etree and "exchanges" in cleaned_etree:
             # --- Parse simulation info from 'coupling-scheme' ---
-            simulation_info = etree["coupling-scheme"]
+            simulation_info = cleaned_etree["coupling-scheme"]
             self.sim_info.sync_mode = simulation_info.get("sync-mode", "on")
             self.sim_info.mode = simulation_info.get("mode", "fundamental")
             self.sim_info.steady = False
-            self.sim_info.NrTimeStep = simulation_info.get("max-time", 1e-3)
-            self.sim_info.Dt = simulation_info.get("time-window-size", 1e-3)
+            self.sim_info.NrTimeStep = float(simulation_info.get("max-time", 1e-3))
+            self.sim_info.Dt = float(simulation_info.get("time-window-size", 1e-3))
             self.sim_info.accuracy = "medium"
 
             # --- Parse participants ---
             self.participants = {}
-            participants_data = etree["participants"]
+            participants_data = cleaned_etree["participants"]
             for participant_name, solver_info in participants_data.items():
                 new_participant = UI_Participant()
-                new_participant.name = participant_name
-                new_participant.solverName = solver_info
+                new_participant.name = str(participant_name)
+                new_participant.solverName = str(solver_info)
                 new_participant.solverType = ""  # Placeholder; adjust if solver-type info available
                 new_participant.list_of_couplings = []
                 self.participants[participant_name] = new_participant
 
             # --- Parse couplings from exchanges ---
-            exchanges_list = etree["exchanges"]
+            exchanges_list = cleaned_etree["exchanges"]
             # Group exchanges by unique participant pairs
             groups = {}
             for exchange in exchanges_list:
