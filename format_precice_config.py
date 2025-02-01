@@ -153,6 +153,7 @@ class PrettyPrinter():
     def printChildren(self, element, level):
         """
         Print all child elements in a specific order: data, meshes, participants, m2n, coupling scheme.
+        For participants, reorder provide/receive mesh and write/read data.
         Unknown elements are placed after the specified groups.
         """
         if level > self.maxgrouplevel:
@@ -181,7 +182,39 @@ class PrettyPrinter():
 
         last = len(sorted_children)
         for i, group in enumerate(sorted_children, start=1):
+            # Special handling for participants to reorder child elements
+            if 'participant' in str(group.tag):
+                # Define order for participant child elements
+                participant_order = {
+                    'provide-mesh': 1,
+                    'receive-mesh': 2,
+                    'write-data': 3,
+                    'read-data': 4,
+                    'mapping:nearest-neighbor': 5
+                }
+                
+                # Sort participant's children based on the defined order
+                sorted_participant_children = sorted(
+                    group.getchildren(), 
+                    key=lambda child: participant_order.get(str(child.tag), 6)
+                )
+                
+                # Temporarily replace group's children with sorted children
+                original_children = list(group.getchildren())
+                for original_child in original_children:
+                    group.remove(original_child)
+                for sorted_child in sorted_participant_children:
+                    group.append(sorted_child)
+            
             self.printElement(group, level=level)
+            
+            # Restore original children if we modified a participant
+            if 'participant' in str(group.tag):
+                for sorted_child in sorted_participant_children:
+                    group.remove(sorted_child)
+                for original_child in original_children:
+                    group.append(original_child)
+            
             # Add an extra newline between groups (except after comments or the last group)
             if not (isComment(group) or (i == last)):
                 self.print()
