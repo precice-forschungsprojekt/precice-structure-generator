@@ -153,25 +153,26 @@ class PrettyPrinter():
     def printChildren(self, element, level):
         """
         Print all child elements in a specific order: data, meshes, participants, m2n, coupling scheme.
+        Unknown elements are placed after the specified groups.
         """
         if level > self.maxgrouplevel:
             for child in element.getchildren():
                 self.printElement(child, level=level)
             return
 
-        # Define the order of element types
-        order_map = {
-            'data:': 1,
-            'mesh': 2,
-            'participant': 3,
-            'm2n:': 4,
-            'coupling-scheme:': 5
-        }
+        # Define the order of element types with flexible matching
+        order_map = [
+            ('data:', 1),
+            ('mesh', 2),
+            ('participant', 3),
+            ('m2n:', 4),
+            ('coupling-scheme:', 5)
+        ]
 
         # Sort children based on the predefined order
         def custom_sort_key(elem):
             tag = str(elem.tag)
-            for prefix, order in order_map.items():
+            for prefix, order in order_map:
                 if prefix in tag:
                     return order
             return 6  # Any other elements go last
