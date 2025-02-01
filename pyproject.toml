@@ -34,11 +34,10 @@ dependencies = [
 ]
 
 [project.authors]
-name = "VanLaareN"
-email = "TODO"
-[[project.authors]]
-name = "Toddelismyname"
-email = "116207910+Toddelismyname@users.noreply.github.com"
+authors = [
+    {name = "VanLaareN", email = "TODO"},
+    {name = "Toddelismyname", email = "116207910+Toddelismyname@users.noreply.github.com"}
+]
 
 [project.optional-dependencies]
 dev = [
