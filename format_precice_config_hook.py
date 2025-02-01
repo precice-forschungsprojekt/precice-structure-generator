@@ -240,7 +240,7 @@ class PrettyPrinter():
                         exchange_elements.append(child)
                     elif tag == 'relative-convergence-measure':
                         convergence_elements.append(child)
-                    elif tag == 'acceleration:IQN-ILS':
+                    elif tag.startswith('acceleration:'):
                         acceleration_elements.append(child)
                     else:
                         other_elements.append(child)
