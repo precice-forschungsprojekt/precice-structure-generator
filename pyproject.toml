@@ -50,9 +50,13 @@ Issues = "https://github.com/precice-forschungsprojekt/PreCICE-Genesis/issues"
 Documentation = "https://github.com/precice-forschungsprojekt/PreCICE-Genesis/blob/main/README.md"
 
 [tool.setuptools]
-py-modules = ["FileGenerator", "format_precice_config"]
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["*", "generation_utils*", "controller_utils*", "schemas*", "setup_scripts*", "templates*"]
-exclude = ["tests*"]
+py-modules = [
+    "FileGenerator", 
+    "format_precice_config", 
+    "generation_utils.StructureHandler",
+    "generation_utils.Logger",
+    "generation_utils.AdapterConfigGenerator",
+    "controller_utils.ui_struct.UI_UserInput",
+    "controller_utils.myutils.UT_PCErrorLogging",
+    "controller_utils.precice_struct"
+]
