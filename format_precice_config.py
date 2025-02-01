@@ -171,10 +171,19 @@ class PrettyPrinter():
         # Custom sorting for top-level elements
         def custom_sort_key(elem):
             tag = str(elem.tag)
-            try:
-                return self.top_level_order.index(tag)
-            except ValueError:
-                return len(self.top_level_order)
+            # Predefined order for top-level elements with prefix matching
+            order = {
+                'data:': 1,  # Matches data:vector, data:scalar, etc.
+                'mesh': 2,
+                'participant': 3,
+                'm2n:': 4,
+                'coupling-scheme:': 5
+            }
+            # Find the first matching key
+            for prefix, rank in order.items():
+                if tag.startswith(prefix):
+                    return rank
+            return 6  # Unknown elements appear last
 
         # Sort children based on the predefined order
         sorted_children = sorted(element.getchildren(), key=custom_sort_key)
@@ -183,188 +192,56 @@ class PrettyPrinter():
         for i, group in enumerate(sorted_children, start=1):
             # Special handling for participants to reorder child elements
             if 'participant' in str(group.tag):
-                # Define order for participant child elements
+                # Define order for participant child elements with more generalized matching
                 participant_order = {
                     'provide-mesh': 1,
                     'receive-mesh': 2,
                     'write-data': 3,
                     'read-data': 4,
-                    'mapping:nearest-neighbor': 5
+                    'mapping:': 5  # Matches mapping:nearest-neighbor, mapping:rbf, etc.
                 }
                 
                 # Sort participant's children based on the defined order
                 sorted_participant_children = sorted(
                     group.getchildren(), 
-                    key=lambda child: participant_order.get(str(child.tag), 6)
-                )
-                
-                # Separate different types of elements
-                mesh_elements = []
-                data_elements = []
-                mapping_elements = []
-                
-                for child in sorted_participant_children:
-                    group_type = self._get_participant_group_type(child)
-                    if group_type == 'mesh':
-                        mesh_elements.append(child)
-                    elif group_type == 'data':
-                        data_elements.append(child)
-                    elif group_type == 'mapping':
-                        mapping_elements.append(child)
-                
-                # Construct participant tag with attributes
-                participant_tag = "<{}".format(group.tag)
-                for attr, value in group.items():
-                    participant_tag += ' {}="{}"'.format(attr, value)
-                participant_tag += ">"
-                
-                # Print participant opening tag
-                self.print(self.indent * level + participant_tag)
-                
-                # Print mesh elements
-                for child in mesh_elements:
-                    self.printElement(child, level + 1)
-                
-                # Add newline between mesh and data
-                if mesh_elements and data_elements:
-                    self.print()
-                
-                # Print data elements
-                for child in data_elements:
-                    self.printElement(child, level + 1)
-                
-                # Add newline before mapping
-                if data_elements and mapping_elements:
-                    self.print()
-                
-                # Print mapping elements with multi-line formatting
-                for mapping_elem in mapping_elements:
-                    self.print("{}<mapping:nearest-neighbor".format(self.indent * (level + 1)))
-                    for k, v in mapping_elem.items():
-                        self.print("{}{}=\"{}\"".format(self.indent * (level + 2), k, v))
-                    self.print("{} />".format(self.indent * (level + 1)))
-                
-                # Close participant tag
-                self.print("{}</participant>".format(self.indent * level))
-                
-                # Add newline after participant if not the last element
-                if i < last:
-                    self.print()
-                
-                continue
-            
-            # Special handling for coupling-scheme elements
-            if 'coupling-scheme' in str(group.tag):
-                # Sort coupling-scheme children
-                sorted_coupling_children = sorted(
-                    group.getchildren(), 
-                    key=lambda child: (
-                        0 if str(child.tag) in ['participants', 'max-time', 'time-window-size'] else 1,
-                        2 if str(child.tag) == 'max-iterations' else 0,
-                        self._get_coupling_scheme_group_type(child)
+                    key=lambda child: next(
+                        (rank for prefix, rank in participant_order.items() 
+                         if str(child.tag).startswith(prefix)), 
+                        6  # Unknown elements appear last
                     )
                 )
                 
-                # Separate different types of elements
-                other_elements = []
-                exchange_elements = []
-                convergence_elements = []
-                acceleration_elements = []
-                
-                for child in sorted_coupling_children:
-                    tag = str(child.tag)
-                    if tag == 'exchange':
-                        exchange_elements.append(child)
-                    elif tag == 'relative-convergence-measure':
-                        convergence_elements.append(child)
-                    elif tag == 'acceleration:IQN-ILS':
-                        acceleration_elements.append(child)
-                    else:
-                        other_elements.append(child)
-                
-                # Print coupling-scheme opening tag
-                self.print(self.indent * level + "<{}>".format(group.tag))
-                
-                # Print initial elements
-                initial_elements = [
-                    elem for elem in other_elements 
-                    if str(elem.tag) in ['participants', 'max-time', 'time-window-size']
-                ]
-                for child in initial_elements:
-                    self.printElement(child, level + 1)
-                
-                # Print all exchanges
-                if exchange_elements:
-                    if initial_elements:
+                # Print participant with reordered children
+                self.printTagStart(group, level=level)
+                for child in sorted_participant_children:
+                    self.printElement(child, level=level + 1)
+                    # Add a newline after read/write mesh elements
+                    if str(child.tag) in ['write-mesh', 'read-mesh']:
                         self.print()
-                    for exchange in exchange_elements:
-                        self.printElement(exchange, level + 1)
-                
-                # Print max-iterations if present
-                max_iterations = [
-                    elem for elem in other_elements 
-                    if str(elem.tag) == 'max-iterations'
-                ]
-                if max_iterations:
-                    if exchange_elements:
-                        self.print()
-                    for child in max_iterations:
-                        self.printElement(child, level + 1)
-                
-                # Print all convergence measures
-                if convergence_elements:
-                    if exchange_elements or max_iterations:
-                        self.print()
-                    for conv in convergence_elements:
-                        self.printElement(conv, level + 1)
-                
-                # Print acceleration elements
-                if acceleration_elements:
-                    if convergence_elements or exchange_elements or max_iterations:
-                        self.print()
-                    for child in acceleration_elements:
-                        self.printElement(child, level + 1)
-                
-                # Close coupling-scheme tag
-                self.print("{}</{}>"
-                    .format(self.indent * level, group.tag))
-                
-                # Add newline after coupling-scheme if not the last element
-                if i < last:
-                    self.print()
-                
-                continue
+                self.printTagEnd(group, level=level)
             
-            # Print the element normally
-            self.printElement(group, level=level)
+            # Special handling for coupling-scheme to pair relative-convergence-measure and exchange
+            elif 'coupling-scheme' in str(group.tag):
+                # Sort children of coupling-scheme
+                sorted_scheme_children = sorted(
+                    group.getchildren(),
+                    key=lambda child: 0 if str(child.tag) == 'relative-convergence-measure' else 
+                                      1 if str(child.tag) == 'exchange' else 2
+                )
+                
+                # Print coupling-scheme with reordered children
+                self.printTagStart(group, level=level)
+                for child in sorted_scheme_children:
+                    self.printElement(child, level=level + 1)
+                self.printTagEnd(group, level=level)
             
-            # Add an extra newline between top-level groups
-            if i < last:
+            # Default handling for other elements
+            else:
+                self.printElement(group, level=level)
+            
+            # Add a newline between groups, except for the last group or comments
+            if not (isComment(group) or (i == last)):
                 self.print()
-
-    def _get_participant_group_type(self, element):
-        """
-        Determine the group type for a participant's child element.
-        """
-        tag = str(element.tag)
-        if tag in ['provide-mesh', 'receive-mesh']:
-            return 'mesh'
-        elif tag in ['write-data', 'read-data']:
-            return 'data'
-        elif tag == 'mapping:nearest-neighbor':
-            return 'mapping'
-        return 'other'
-
-    def _get_coupling_scheme_group_type(self, element):
-        """
-        Determine the group type for a coupling-scheme's child element.
-        """
-        tag = str(element.tag)
-        if tag == 'exchange':
-            return 'exchange'
-        elif tag == 'relative-convergence-measure':
-            return 'relative-convergence-measure'
-        return 'other'
 
     @staticmethod
     def parse_xml(content):
