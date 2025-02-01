@@ -63,7 +63,7 @@ class PrettyPrinter():
             'mesh',
             'participant',
             'm2n:sockets',
-            'coupling-scheme:parallel-implicit'
+            'coupling-scheme:'
         ]
 
     def print(self, text='', end='\n'):
