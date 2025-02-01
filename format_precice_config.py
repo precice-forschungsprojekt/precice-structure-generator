@@ -212,11 +212,6 @@ class PrettyPrinter():
                     elif group_type == 'mapping':
                         mapping_elements.append(child)
                 
-                # Temporarily replace group's children with sorted children
-                original_children = list(group.getchildren())
-                for original_child in original_children:
-                    group.remove(original_child)
-                
                 # Construct participant tag with attributes
                 participant_tag = "<{}".format(group.tag)
                 for attr, value in group.items():
@@ -251,6 +246,11 @@ class PrettyPrinter():
                 
                 # Close participant tag
                 self.print("{}</participant>".format(self.indent * level))
+                
+                # Add newline after participant if not the last element
+                if i < last:
+                    self.print()
+                
                 continue
             
             # Print the element normally
