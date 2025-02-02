@@ -152,6 +152,11 @@ class FileGenerator:
         readme_content = readme_content.replace("{SOLVER1_NAME}", solvers_list[0] if solvers_list else "Solver1")
         readme_content = readme_content.replace("{SOLVER2_NAME}", solvers_list[1] if len(solvers_list) > 1 else "Solver2")
         
+        # Replace participant name placeholder
+        readme_content = readme_content.replace("{PARTICIPANT_NAME}", 
+            participants_list[0] if participants_list else "Participant"
+        )
+        
         # Explicitly replace solver links
         readme_content = readme_content.replace(
             "[Link]", 
