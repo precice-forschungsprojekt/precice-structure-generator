@@ -152,9 +152,15 @@ class FileGenerator:
         readme_content = readme_content.replace("{SOLVER1_NAME}", solvers_list[0] if solvers_list else "Solver1")
         readme_content = readme_content.replace("{SOLVER2_NAME}", solvers_list[1] if len(solvers_list) > 1 else "Solver2")
         
-        # Replace participant name placeholder
-        readme_content = readme_content.replace("{PARTICIPANT_NAME}", 
-            participants_list[0] if participants_list else "Participant"
+        # Generate adapter configuration paths for all participants
+        adapter_config_paths = []
+        for participant in participants_list:
+            adapter_config_paths.append(f"- **{participant}**: `{participant}-{original_solver_names.get(participant.lower(), 'solver')}/adapter-config.json`")
+        
+        # Replace adapter configuration section
+        readme_content = readme_content.replace(
+            "- **Adapter Configuration**: `{PARTICIPANT_NAME}/adapter-config.json`", 
+            "**Adapter Configurations**:\n" + "\n".join(adapter_config_paths)
         )
         
         # Explicitly replace solver links
