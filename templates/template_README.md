@@ -83,8 +83,8 @@ chmod +x clean.sh
 - 🔗 [preCICE Tutorials](https://precice.org/tutorials.html)
 - 🔗 [preCICE Documentation](https://precice.org/docs.html)
 - 🔗 Solver-specific documentation:
-  - {SOLVER1_NAME}: [Link]
-  - {SOLVER2_NAME}: [Link]
+  - {SOLVER1_NAME}: [Link1]
+  - {SOLVER2_NAME}: [Link2]
 
 ---
 

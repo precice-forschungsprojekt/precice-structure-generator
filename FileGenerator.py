@@ -172,11 +172,11 @@ class FileGenerator:
         
         # Explicitly replace solver links
         readme_content = readme_content.replace(
-            "[Link]", 
+            "[Link1]", 
             f"[{solvers_list[0] if solvers_list else 'Solver1'}]({solver_links.get(solvers_list[0].lower(), '#') if solvers_list else '#'})"
         )
         readme_content = readme_content.replace(
-            "[Link]", 
+            "[Link2]", 
             f"[{solvers_list[1] if len(solvers_list) > 1 else 'Solver2'}]({solver_links.get(solvers_list[1].lower(), '#') if len(solvers_list) > 1 else '#'})"
         )
 
