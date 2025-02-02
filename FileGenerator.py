@@ -91,9 +91,46 @@ class FileGenerator:
         pass
     
     def _generate_README(self) -> None:
-        """Generates the README.md file"""
-        self._generate_static_files(target=self.structure.README,
-                                    name="README.md")
+        """Generates the README.md file with dynamic content based on simulation configuration"""
+        # Read the template README
+        with open(Path(__file__).parent / "templates" / "template_README.md", 'r') as template_file:
+            readme_content = template_file.read()
+
+        # Extract participants and their solvers
+        participants_list = []
+        solvers_list = []
+        solver_links = {}
+
+        for participant_name, participant_info in self.user_ui.participants.items():
+            solver_name = participant_info.solverName
+            participants_list.append(participant_name)
+            solvers_list.append(solver_name)
+            
+            # You can expand this with actual solver documentation links if known
+            solver_links[solver_name] = "https://example.com/solver-docs"
+
+        # Determine coupling strategy (you might want to extract this from topology.yaml)
+        coupling_strategy = "Partitioned" if len(participants_list) > 1 else "Single Solver"
+
+        # Replace placeholders
+        readme_content = readme_content.replace("{PARTICIPANTS_LIST}", "\n  ".join(f"- {p}" for p in participants_list))
+        readme_content = readme_content.replace("{SOLVERS_LIST}", "\n  ".join(f"- {s}" for s in solvers_list))
+        readme_content = readme_content.replace("{COUPLING_STRATEGY}", coupling_strategy)
+        
+        # Replace solver-specific placeholders
+        if len(solvers_list) >= 1:
+            readme_content = readme_content.replace("{SOLVER1_NAME}", solvers_list[0])
+            readme_content = readme_content.replace("{SOLVER1_LINK}", solver_links.get(solvers_list[0], "#"))
+        
+        if len(solvers_list) >= 2:
+            readme_content = readme_content.replace("{SOLVER2_NAME}", solvers_list[1])
+            readme_content = readme_content.replace("{SOLVER2_LINK}", solver_links.get(solvers_list[1], "#"))
+
+        # Write the updated README
+        with open(self.structure.README, 'w') as readme_file:
+            readme_file.write(readme_content)
+
+        self.logger.success(f"Generated README at {self.structure.README}")
 
     def _generate_run(self, run_sh: Path) -> None:
         """Generates the run.sh file
