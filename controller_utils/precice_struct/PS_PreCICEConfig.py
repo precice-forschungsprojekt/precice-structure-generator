@@ -143,10 +143,27 @@ class PS_PreCICEConfig(object):
 
         # if we have one conjugate heat or FSI then we must use implicit coupling
         # print(" COUPLING VALUE = ", max_coupling_value)
-        if max_coupling_value < 2:
-            self.couplingScheme = PS_ImplicitCoupling()
+        
+        # Check if topology types are available
+        topology_types = [coupling.topology_type for coupling in user_input.couplings if hasattr(coupling, 'topology_type')]
+        
+        if topology_types:
+            # If all topology types are 'strong', use implicit coupling
+            if all(type_val == 'strong' for type_val in topology_types):
+                self.couplingScheme = PS_ImplicitCoupling()
+            else:
+                # If mixed types, fall back to original max_coupling_value logic
+                if max_coupling_value < 2:
+                    self.couplingScheme = PS_ImplicitCoupling()
+                else:
+                    self.couplingScheme = PS_ExplicitCoupling()
         else:
-            self.couplingScheme = PS_ExplicitCoupling()
+            # Original behavior if no topology types are present
+            if max_coupling_value < 2:
+                self.couplingScheme = PS_ImplicitCoupling()
+            else:
+                self.couplingScheme = PS_ExplicitCoupling()
+        
         self.couplingScheme.initFromUI( user_input, self )
 
         pass
