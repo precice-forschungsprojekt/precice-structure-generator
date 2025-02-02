@@ -103,56 +103,57 @@ class PS_PreCICEConfig(object):
             list = participant_obj.list_of_couplings
             self.solvers[participant_name] = PS_ParticipantSolver(participant_obj, list[0], self)
 
-        # should we do something for the couplings?
-        # the couplings are added to the participants already
-        max_coupling_value = 100
-        for coupling in user_input.couplings:
-            # for all couplings, configure the solvers properly
-            participant1_name = coupling.partitcipant1.name
-            participant2_name = coupling.partitcipant2.name
-            participant1_solver = self.solvers[participant1_name]
-            participant2_solver = self.solvers[participant2_name]
-            max_coupling_value = min(max_coupling_value, coupling.coupling_type.value)
+        # Process couplings only if no explicit coupling type is provided
+        if not hasattr(user_input, 'coupling_type') or user_input.coupling_type is None:
+            max_coupling_value = 100
+            for coupling in user_input.couplings:
+                # for all couplings, configure the solvers properly
+                participant1_name = coupling.partitcipant1.name
+                participant2_name = coupling.partitcipant2.name
+                participant1_solver = self.solvers[participant1_name]
+                participant2_solver = self.solvers[participant2_name]
+                max_coupling_value = min(max_coupling_value, coupling.coupling_type.value)
 
-            # ========== FSI =========
-            if coupling.coupling_type == UI_CouplingType.fsi:
-                # VERY IMPORTANT: we rely here on the fact that the participants are sorted alphabetically
-                participant1_solver.make_participant_fsi_fluid(
-                    self, coupling.boundaryC1, coupling.boundaryC2, participant2_solver.name )
-                participant2_solver.make_participant_fsi_structure(
-                    self, coupling.boundaryC1, coupling.boundaryC2, participant1_solver.name)
-                pass
-            # ========== F2S =========
-            if coupling.coupling_type == UI_CouplingType.f2s:
-                # VERY IMPORTANT: we rely here on the fact that the participants are sorted alphabetically
-                participant1_solver.make_participant_f2s_fluid(
-                    self, coupling.boundaryC1, coupling.boundaryC2, participant2_solver.name )
-                participant2_solver.make_participant_f2s_structure(
-                    self, coupling.boundaryC1, coupling.boundaryC2, participant1_solver.name)
-                pass
-            # ========== CHT =========
-            if coupling.coupling_type == UI_CouplingType.cht:
-                # VERY IMPORTANT: we rely here on the fact that the participants are sorted alphabetically
-                participant1_solver.make_participant_cht_fluid(
-                    self, coupling.boundaryC1, coupling.boundaryC2, participant2_solver.name )
-                participant2_solver.make_participant_cht_structure(
-                    self, coupling.boundaryC1, coupling.boundaryC2, participant1_solver.name)
-                pass
-            pass
+                # ========== FSI =========
+                if coupling.coupling_type == UI_CouplingType.fsi:
+                    # VERY IMPORTANT: we rely here on the fact that the participants are sorted alphabetically
+                    participant1_solver.make_participant_fsi_fluid(
+                        self, coupling.boundaryC1, coupling.boundaryC2, participant2_solver.name )
+                    participant2_solver.make_participant_fsi_structure(
+                        self, coupling.boundaryC1, coupling.boundaryC2, participant1_solver.name)
+                    pass
 
-        # Determine coupling scheme based on new coupling type logic or existing max_coupling_value
-        if hasattr(user_input, 'coupling_type') and user_input.coupling_type is not None:
+                # ========== F2S =========
+                if coupling.coupling_type == UI_CouplingType.f2s:
+                    # VERY IMPORTANT: we rely here on the fact that the participants are sorted alphabetically
+                    participant1_solver.make_participant_f2s_fluid(
+                        self, coupling.boundaryC1, coupling.boundaryC2, participant2_solver.name )
+                    participant2_solver.make_participant_f2s_structure(
+                        self, coupling.boundaryC1, coupling.boundaryC2, participant1_solver.name)
+                    pass
+
+                # ========== CHT =========
+                if coupling.coupling_type == UI_CouplingType.cht:
+                    # VERY IMPORTANT: we rely here on the fact that the participants are sorted alphabetically
+                    participant1_solver.make_participant_cht_fluid(
+                        self, coupling.boundaryC1, coupling.boundaryC2, participant2_solver.name )
+                    participant2_solver.make_participant_cht_structure(
+                        self, coupling.boundaryC1, coupling.boundaryC2, participant1_solver.name)
+                    pass
+                pass
+
+            # Fallback coupling scheme determination
+            self.couplingScheme = PS_ImplicitCoupling() if max_coupling_value < 2 else PS_ExplicitCoupling()
+        else:
+            # Use coupling type from input
             if user_input.coupling_type == 'strong':
                 self.couplingScheme = PS_ImplicitCoupling()
             elif user_input.coupling_type == 'weak':
                 self.couplingScheme = PS_ExplicitCoupling()
             else:
-                # Fallback to existing logic if invalid type
-                self.couplingScheme = PS_ImplicitCoupling() if max_coupling_value < 2 else PS_ExplicitCoupling()
-        else:
-            # Use existing logic if no coupling type specified
-            self.couplingScheme = PS_ImplicitCoupling() if max_coupling_value < 2 else PS_ExplicitCoupling()
-        
+                # Fallback to implicit if invalid type
+                self.couplingScheme = PS_ImplicitCoupling()
+
         # Initialize coupling scheme with user input
         self.couplingScheme.initFromUI(user_input, self)
 
