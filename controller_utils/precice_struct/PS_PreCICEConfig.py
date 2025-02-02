@@ -95,31 +95,10 @@ class PS_PreCICEConfig(object):
         return None
 
     def create_config(self, user_input: UI_UserInput):
-        """
-        Create configuration based on user input.
-        
-        Determines coupling scheme based on:
-        1. Explicitly defined coupling_type in user input
-        2. Fallback to implicit (strong) if no type specified
-        """
-        # Determine coupling scheme based on coupling type
-        if hasattr(user_input, 'coupling_type'):
-            if user_input.coupling_type == 'strong':
-                self.couplingScheme = PS_ImplicitCoupling()
-            elif user_input.coupling_type == 'weak':
-                self.couplingScheme = PS_ExplicitCoupling()
-            else:
-                # Fallback to implicit if invalid type
-                self.couplingScheme = PS_ImplicitCoupling()
-        else:
-            # Default to implicit coupling if no type specified
-            self.couplingScheme = PS_ImplicitCoupling()
+        """Creates the main preCICE config from the UI structure."""
 
-        # Initialize coupling scheme with user input
-        self.couplingScheme.initFromUI(user_input, self)
         # participants
         for participant_name in user_input.participants:
-            # print("particip:", participant_name)
             participant_obj = user_input.participants[participant_name]
             list = participant_obj.list_of_couplings
             self.solvers[participant_name] = PS_ParticipantSolver(participant_obj, list[0], self)
@@ -134,6 +113,7 @@ class PS_PreCICEConfig(object):
             participant1_solver = self.solvers[participant1_name]
             participant2_solver = self.solvers[participant2_name]
             max_coupling_value = min(max_coupling_value, coupling.coupling_type.value)
+
             # ========== FSI =========
             if coupling.coupling_type == UI_CouplingType.fsi:
                 # VERY IMPORTANT: we rely here on the fact that the participants are sorted alphabetically
@@ -141,7 +121,6 @@ class PS_PreCICEConfig(object):
                     self, coupling.boundaryC1, coupling.boundaryC2, participant2_solver.name )
                 participant2_solver.make_participant_fsi_structure(
                     self, coupling.boundaryC1, coupling.boundaryC2, participant1_solver.name)
-                # print(" FSI s1:", participant1_name, " s2:", participant2_name)
                 pass
             # ========== F2S =========
             if coupling.coupling_type == UI_CouplingType.f2s:
@@ -160,6 +139,22 @@ class PS_PreCICEConfig(object):
                     self, coupling.boundaryC1, coupling.boundaryC2, participant1_solver.name)
                 pass
             pass
+
+        # Determine coupling scheme based on new coupling type logic or existing max_coupling_value
+        if hasattr(user_input, 'coupling_type') and user_input.coupling_type is not None:
+            if user_input.coupling_type == 'strong':
+                self.couplingScheme = PS_ImplicitCoupling()
+            elif user_input.coupling_type == 'weak':
+                self.couplingScheme = PS_ExplicitCoupling()
+            else:
+                # Fallback to existing logic if invalid type
+                self.couplingScheme = PS_ImplicitCoupling() if max_coupling_value < 2 else PS_ExplicitCoupling()
+        else:
+            # Use existing logic if no coupling type specified
+            self.couplingScheme = PS_ImplicitCoupling() if max_coupling_value < 2 else PS_ExplicitCoupling()
+        
+        # Initialize coupling scheme with user input
+        self.couplingScheme.initFromUI(user_input, self)
 
         pass
 
