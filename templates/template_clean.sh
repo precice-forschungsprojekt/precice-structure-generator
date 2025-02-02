@@ -5,11 +5,11 @@
 # Description: Deletes all files and directories in the current directory
 #              except for the hardcoded preserved files.
 #              Preserved files:
-#                - clean.sh
-#                - README.md
-#                - run.sh
-#                - config/adapter-config.json
-#                - config/precice-config.xml
+#                - _generated/clean.sh
+#                - _generated/README.md
+#                - _generated/precice-config.xml
+#                - _generated/*-*/adapter-config.json
+#                - _generated/*-*/run.sh
 # Usage: ./clean.sh [--dry-run]
 # -------------------------------------------------------------------
 
@@ -21,11 +21,11 @@ ROOT_DIR="$(pwd)"
 
 # Define the preserved files with their relative paths from ROOT_DIR
 PRESERVE_FILES=(
-    "clean.sh"
-    "README.md"
-    "run.sh"
-    "config/adapter-config.json"
-    "config/precice-config.xml"
+    "_generated/clean.sh"
+    "_generated/README.md"
+    "_generated/precice-config.xml"
+    "_generated/"*-*"/adapter-config.json"
+    "_generated/"*-*"/run.sh"
 )
 
 # Define backup directory (optional)
