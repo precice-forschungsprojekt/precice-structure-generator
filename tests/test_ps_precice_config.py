@@ -1,6 +1,5 @@
 import os
 import shutil
-import xml.etree.ElementTree as ET
 from pathlib import Path
 import yaml
 import pytest
@@ -44,24 +43,22 @@ class TopologyCouplingTest:
         return self.output_dir / '_generated' / 'precice-config.xml'
 
     def _check_coupling_type(self, config_file, expected_type):
-        # Read and print the XML content for debugging
+        # Read the XML content
         with open(config_file, 'r') as f:
             xml_content = f.read()
             print(f"XML Content:\n{xml_content}")
 
-        tree = ET.parse(config_file)
-        root = tree.getroot()
+        # Find the coupling scheme line
+        coupling_scheme_line = [line for line in xml_content.split('\n') if 'coupling-scheme:' in line][0].strip()
         
-        # Search for coupling-scheme tag
-        coupling_scheme = root.find('.//coupling-scheme')
+        # Determine coupling type based on the line
+        if expected_type == 'implicit':
+            assert 'parallel-implicit' in coupling_scheme_line or 'implicit' in coupling_scheme_line, \
+                f"Expected implicit coupling, got line: {coupling_scheme_line}"
+        else:  # explicit
+            assert 'parallel-explicit' in coupling_scheme_line or 'explicit' in coupling_scheme_line, \
+                f"Expected explicit coupling, got line: {coupling_scheme_line}"
         
-        if coupling_scheme is None:
-            raise ValueError(f"No coupling scheme found in {config_file}")
-        
-        # Check type attribute
-        type_attr = coupling_scheme.get('type')
-        
-        assert type_attr == expected_type, f"Expected {expected_type} coupling, got {type_attr}"
         print(f"✓ Verified {expected_type} coupling for {config_file}")
 
 def test_strong_topology_implicit_coupling():
