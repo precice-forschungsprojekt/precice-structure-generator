@@ -33,6 +33,27 @@ class UI_UserInput(object):
             self.sim_info.Dt = simulation_info.get("time-window-size", 1e-3)
             self.sim_info.accuracy = "medium"
 
+            # Initialize coupling type to None
+            self.coupling_type = None
+            
+            # Extract coupling type from exchanges
+            if 'exchanges' in etree:
+                exchanges = etree['exchanges']
+                exchange_types = [exchange.get('type') for exchange in exchanges if 'type' in exchange]
+                
+                # Validate exchange types
+                if exchange_types:
+                    # If all types are the same, set that as the coupling type
+                    if len(set(exchange_types)) == 1:
+                        self.coupling_type = exchange_types[0]
+                        if self.coupling_type not in ['strong', 'weak']:
+                            mylog.error(f"Invalid exchange type: {self.coupling_type}. Must be 'strong' or 'weak'.")
+                            self.coupling_type = 'strong'  # Default to strong
+                    else:
+                        # Mixed types, default to weak
+                        mylog.warning("Mixed exchange types detected. Defaulting to 'weak'.")
+                        self.coupling_type = 'weak'
+            
             # --- Parse participants ---
             self.participants = {}
             participants_data = etree["participants"]
@@ -56,8 +77,8 @@ class UI_UserInput(object):
             for pair, ex_list in groups.items():
                 coupling = UI_Coupling()
                 p1_name, p2_name = pair
-                coupling.partitcipant1 = self.participants[p1_name]
-                coupling.partitcipant2 = self.participants[p2_name]
+                coupling.participant1 = self.participants[p1_name]
+                coupling.participant2 = self.participants[p2_name]
 
                 # Determine coupling type based on exchanged data
                 data_names = {ex["data"] for ex in ex_list}
@@ -76,8 +97,8 @@ class UI_UserInput(object):
                 coupling.boundaryC2 = first_ex.get("to-patch", "")
 
                 self.couplings.append(coupling)
-                coupling.partitcipant1.list_of_couplings.append(coupling)
-                coupling.partitcipant2.list_of_couplings.append(coupling)
+                coupling.participant1.list_of_couplings.append(coupling)
+                coupling.participant2.list_of_couplings.append(coupling)
 
         else:
             # --- Fallback to original parsing logic for old YAML structures ---
