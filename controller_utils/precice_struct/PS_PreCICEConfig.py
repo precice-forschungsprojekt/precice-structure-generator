@@ -99,7 +99,6 @@ class PS_PreCICEConfig(object):
 
         # participants
         for participant_name in user_input.participants:
-            # print("particip:", participant_name)
             participant_obj = user_input.participants[participant_name]
             list = participant_obj.list_of_couplings
             self.solvers[participant_name] = PS_ParticipantSolver(participant_obj, list[0], self)
@@ -114,6 +113,7 @@ class PS_PreCICEConfig(object):
             participant1_solver = self.solvers[participant1_name]
             participant2_solver = self.solvers[participant2_name]
             max_coupling_value = min(max_coupling_value, coupling.coupling_type.value)
+
             # ========== FSI =========
             if coupling.coupling_type == UI_CouplingType.fsi:
                 # VERY IMPORTANT: we rely here on the fact that the participants are sorted alphabetically
@@ -121,7 +121,6 @@ class PS_PreCICEConfig(object):
                     self, coupling.boundaryC1, coupling.boundaryC2, participant2_solver.name )
                 participant2_solver.make_participant_fsi_structure(
                     self, coupling.boundaryC1, coupling.boundaryC2, participant1_solver.name)
-                # print(" FSI s1:", participant1_name, " s2:", participant2_name)
                 pass
             # ========== F2S =========
             if coupling.coupling_type == UI_CouplingType.f2s:
@@ -141,13 +140,23 @@ class PS_PreCICEConfig(object):
                 pass
             pass
 
-        # if we have one conjugate heat or FSI then we must use implicit coupling
-        # print(" COUPLING VALUE = ", max_coupling_value)
-        if max_coupling_value < 2:
-            self.couplingScheme = PS_ImplicitCoupling()
+        # Determine coupling scheme based on new coupling type logic or existing max_coupling_value
+        if hasattr(user_input, 'coupling_type') and user_input.coupling_type is not None:
+            if user_input.coupling_type == 'strong':
+                self.couplingScheme = PS_ImplicitCoupling()
+            elif user_input.coupling_type == 'weak':
+                self.couplingScheme = PS_ExplicitCoupling()
+            else:
+                # Fallback to existing logic if invalid type
+                self.couplingScheme = PS_ImplicitCoupling() if max_coupling_value < 2 else PS_ExplicitCoupling()
         else:
-            self.couplingScheme = PS_ExplicitCoupling()
-        self.couplingScheme.initFromUI( user_input, self )
+            # Use existing logic if no coupling type specified
+            self.couplingScheme = PS_ImplicitCoupling() if max_coupling_value < 2 else PS_ExplicitCoupling()
+            #throw an error if no coupling type is specified and the coupling scheme is not compatible with the coupling type
+            #raise ValueError("No coupling type specified and coupling scheme is not compatible with the coupling type " + ("explicit" if self.couplingScheme is PS_ExplicitCoupling() else "implicit"))
+        
+        # Initialize coupling scheme with user input
+        self.couplingScheme.initFromUI(user_input, self)
 
         pass
 

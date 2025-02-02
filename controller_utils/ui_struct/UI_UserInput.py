@@ -33,6 +33,28 @@ class UI_UserInput(object):
             self.sim_info.Dt = simulation_info.get("time-window-size", 1e-3)
             self.sim_info.accuracy = "medium"
 
+            # Initialize coupling type to None
+            self.coupling_type = None
+            
+            # Extract coupling type from exchanges
+            if 'exchanges' in etree:
+                exchanges = etree['exchanges']
+                exchange_types = [exchange.get('type') for exchange in exchanges if 'type' in exchange]
+                
+                # Validate exchange types
+                if exchange_types:
+                    # If all types are the same, set that as the coupling type
+                    if len(set(exchange_types)) == 1:
+                        if exchange_types[0] == 'strong' or exchange_types[0] == 'weak':
+                            self.coupling_type = exchange_types[0]
+                        else:
+                            mylog.rep_error(f"Invalid exchange type: {exchange_types[0]}. Must be 'strong' or 'weak'.")
+                            self.coupling_type = None
+                    else:
+                        # Mixed types, default to weak
+                        #mylog.rep_error("Mixed exchange types detected. Defaulting to 'weak'.")
+                        self.coupling_type = 'weak'
+            
             # --- Parse participants ---
             self.participants = {}
             participants_data = etree["participants"]
