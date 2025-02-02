@@ -6,7 +6,7 @@ import pytest
 
 from FileGenerator import FileGenerator
 
-class TopologyCouplingTest:
+class CouplingSchemeConfigurationTest:
     def __init__(self):
         self.template_config = Path('controller_utils/examples/1/topology.yaml')
         self.output_dir = Path('tests/generation-tests/topology_coupling_tests')
@@ -68,17 +68,17 @@ class TopologyCouplingTest:
         print(f"✓ Verified {expected_type} coupling for {config_file}")
 
 def test_strong_topology_implicit_coupling():
-    test = TopologyCouplingTest()
+    test = CouplingSchemeConfigurationTest()
     config_file = test._create_temp_config('strong')
     test._check_coupling_type(config_file, 'implicit')
 
 def test_weak_topology_explicit_coupling():
-    test = TopologyCouplingTest()
+    test = CouplingSchemeConfigurationTest()
     config_file = test._create_temp_config('weak')
     test._check_coupling_type(config_file, 'explicit')
 
 def test_mixed_exchanges_weak_coupling():
-    test = TopologyCouplingTest()
+    test = CouplingSchemeConfigurationTest()
     mixed_exchanges = [
         {
             'from': 'Fluid',
@@ -101,7 +101,7 @@ def test_mixed_exchanges_weak_coupling():
     test._check_coupling_type(config_file, 'explicit')
 
 def test_all_weak_exchanges_explicit_coupling():
-    test = TopologyCouplingTest()
+    test = CouplingSchemeConfigurationTest()
     weak_exchanges = [
         {
             'from': 'Fluid',
@@ -124,7 +124,7 @@ def test_all_weak_exchanges_explicit_coupling():
     test._check_coupling_type(config_file, 'explicit')
 
 def test_all_strong_exchanges_implicit_coupling():
-    test = TopologyCouplingTest()
+    test = CouplingSchemeConfigurationTest()
     strong_exchanges = [
         {
             'from': 'Fluid',
@@ -147,7 +147,7 @@ def test_all_strong_exchanges_implicit_coupling():
     test._check_coupling_type(config_file, 'implicit')
 
 def test_no_exchange_types_default_implicit_coupling():
-    test = TopologyCouplingTest()
+    test = CouplingSchemeConfigurationTest()
     no_type_exchanges = [
         {
             'from': 'Fluid',
