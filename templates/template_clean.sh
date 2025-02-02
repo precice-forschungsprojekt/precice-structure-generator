@@ -7,9 +7,9 @@
 #              Preserved files:
 #                - clean.sh
 #                - README.md
-#                - run.sh
-#                - config/adapter-config.json
-#                - config/precice-config.xml
+#                - precice-config.xml
+#                - *-*/adapter-config.json
+#                - *-*/run.sh
 # Usage: ./clean.sh [--dry-run]
 # -------------------------------------------------------------------
 
@@ -23,9 +23,9 @@ ROOT_DIR="$(pwd)"
 PRESERVE_FILES=(
     "clean.sh"
     "README.md"
-    "run.sh"
-    "config/adapter-config.json"
-    "config/precice-config.xml"
+    "precice-config.xml"
+    "*-*/adapter-config.json"
+    "*-*/run.sh"
 )
 
 # Define backup directory (optional)
