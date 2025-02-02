@@ -127,6 +127,7 @@ class FileGenerator:
             self.logger.warning("No participants found. Using default placeholders.")
             participants_list = ["DefaultParticipant"]
             solvers_list = ["DefaultSolver"]
+            original_solver_names = {"defaultparticipant": "DefaultSolver"}
         else:
             for participant_name, participant_info in self.user_ui.participants.items():
                 # Preserve original solver name
@@ -135,7 +136,7 @@ class FileGenerator:
                 
                 participants_list.append(participant_name)
                 solvers_list.append(original_solver_name)
-                original_solver_names[solver_name] = original_solver_name
+                original_solver_names[participant_name.lower()] = original_solver_name
                 
                 # Get solver documentation link, use default if not found
                 solver_links[solver_name] = SOLVER_DOCS.get(solver_name, SOLVER_DOCS['default'])
@@ -154,8 +155,14 @@ class FileGenerator:
         
         # Generate adapter configuration paths for all participants
         adapter_config_paths = []
+        print("Participants:", participants_list)
+        print("Original Solver Names:", original_solver_names)
+        
         for participant in participants_list:
-            adapter_config_paths.append(f"- **{participant}**: `{participant}-{original_solver_names.get(participant.lower(), 'solver')}/adapter-config.json`")
+            # Find the corresponding solver name for this participant
+            solver_name = original_solver_names.get(participant.lower(), 'solver')
+            print(f"Participant: {participant}, Solver Name: {solver_name}")
+            adapter_config_paths.append(f"- **{participant}**: `{participant}-{solver_name}/adapter-config.json`")
         
         # Replace adapter configuration section
         readme_content = readme_content.replace(
