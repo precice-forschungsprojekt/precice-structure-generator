@@ -92,8 +92,8 @@ class FileGenerator:
     
     def _generate_README(self) -> None:
         """Generates the README.md file with dynamic content based on simulation configuration"""
-        # Read the template README
-        with open(Path(__file__).parent / "templates" / "template_README.md", 'r') as template_file:
+        # Read the template README with explicit UTF-8 encoding
+        with open(Path(__file__).parent / "templates" / "template_README.md", 'r', encoding='utf-8') as template_file:
             readme_content = template_file.read()
 
         # Extract participants and their solvers
@@ -126,8 +126,8 @@ class FileGenerator:
             readme_content = readme_content.replace("{SOLVER2_NAME}", solvers_list[1])
             readme_content = readme_content.replace("{SOLVER2_LINK}", solver_links.get(solvers_list[1], "#"))
 
-        # Write the updated README
-        with open(self.structure.README, 'w') as readme_file:
+        # Write the updated README with UTF-8 encoding
+        with open(self.structure.README, 'w', encoding='utf-8') as readme_file:
             readme_file.write(readme_content)
 
         self.logger.success(f"Generated README at {self.structure.README}")
