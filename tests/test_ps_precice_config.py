@@ -146,5 +146,26 @@ def test_all_strong_exchanges_implicit_coupling():
     config_file = test._create_temp_config('strong', strong_exchanges)
     test._check_coupling_type(config_file, 'implicit')
 
+def test_no_exchange_types_default_implicit_coupling():
+    test = TopologyCouplingTest()
+    no_type_exchanges = [
+        {
+            'from': 'Fluid',
+            'from-patch': 'interface',
+            'to': 'Solid', 
+            'to-patch': 'surface',
+            'data': 'Force'
+        },
+        {
+            'from': 'Solid',
+            'from-patch': 'surface',
+            'to': 'Fluid',
+            'to-patch': 'interface', 
+            'data': 'Displacement'
+        }
+    ]
+    config_file = test._create_temp_config('default', no_type_exchanges)
+    test._check_coupling_type(config_file, 'implicit')
+
 if __name__ == '__main__':
     pytest.main([__file__])
