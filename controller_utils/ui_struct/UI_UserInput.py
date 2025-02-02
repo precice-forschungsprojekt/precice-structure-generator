@@ -53,7 +53,7 @@ class UI_UserInput(object):
                     else:
                         # Mixed types, default to weak
                         #mylog.rep_error("Mixed exchange types detected. Defaulting to 'weak'.")
-                        self.coupling_type = None
+                        self.coupling_type = 'weak'
             
             # --- Parse participants ---
             self.participants = {}

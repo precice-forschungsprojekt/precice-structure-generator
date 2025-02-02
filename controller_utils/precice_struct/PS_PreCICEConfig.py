@@ -152,6 +152,8 @@ class PS_PreCICEConfig(object):
         else:
             # Use existing logic if no coupling type specified
             self.couplingScheme = PS_ImplicitCoupling() if max_coupling_value < 2 else PS_ExplicitCoupling()
+            #throw an error if no coupling type is specified and the coupling scheme is not compatible with the coupling type
+            #raise ValueError("No coupling type specified and coupling scheme is not compatible with the coupling type " + ("explicit" if self.couplingScheme is PS_ExplicitCoupling() else "implicit"))
         
         # Initialize coupling scheme with user input
         self.couplingScheme.initFromUI(user_input, self)
