@@ -45,14 +45,15 @@ class UI_UserInput(object):
                 if exchange_types:
                     # If all types are the same, set that as the coupling type
                     if len(set(exchange_types)) == 1:
-                        self.coupling_type = exchange_types[0]
-                        if self.coupling_type not in ['strong', 'weak']:
-                            mylog.rep_error(f"Invalid exchange type: {self.coupling_type}. Must be 'strong' or 'weak'.")
-                            self.coupling_type = 'strong'  # Default to strong
+                        if exchange_types[0] == 'strong' or exchange_types[0] == 'weak':
+                            self.coupling_type = exchange_types[0]
+                        else:
+                            mylog.rep_error(f"Invalid exchange type: {exchange_types[0]}. Must be 'strong' or 'weak'.")
+                            self.coupling_type = None
                     else:
                         # Mixed types, default to weak
                         #mylog.rep_error("Mixed exchange types detected. Defaulting to 'weak'.")
-                        self.coupling_type = 'weak'
+                        self.coupling_type = None
             
             # --- Parse participants ---
             self.participants = {}
