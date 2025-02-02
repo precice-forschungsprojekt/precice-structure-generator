@@ -154,8 +154,8 @@ class FileGenerator:
     def generate_level_0(self) -> None:
         """Fills out the files of level 0 (everything in the root folder)."""
         self._generate_clean()
-        self._generate_README()
         self._generate_precice_config()
+        self._generate_README()
     
     def _extract_participants(self) -> list[str]:
         """Extracts the participants from the topology.yaml file."""
