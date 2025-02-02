@@ -144,14 +144,19 @@ class FileGenerator:
         readme_content = readme_content.replace("{SOLVERS_LIST}", "\n  ".join(f"- {s}" for s in solvers_list))
         readme_content = readme_content.replace("{COUPLING_STRATEGY}", coupling_strategy)
         
-        # Replace solver-specific placeholders
-        if len(solvers_list) >= 1:
-            readme_content = readme_content.replace("{SOLVER1_NAME}", solvers_list[0])
-            readme_content = readme_content.replace("{SOLVER1_LINK}", solver_links.get(solvers_list[0], "#"))
+        # Explicitly replace solver-specific placeholders
+        readme_content = readme_content.replace("{SOLVER1_NAME}", solvers_list[0] if solvers_list else "Solver1")
+        readme_content = readme_content.replace("{SOLVER2_NAME}", solvers_list[1] if len(solvers_list) > 1 else "Solver2")
         
-        if len(solvers_list) >= 2:
-            readme_content = readme_content.replace("{SOLVER2_NAME}", solvers_list[1])
-            readme_content = readme_content.replace("{SOLVER2_LINK}", solver_links.get(solvers_list[1], "#"))
+        # Explicitly replace solver links
+        readme_content = readme_content.replace(
+            "[Link]", 
+            f"[{solvers_list[0] if solvers_list else 'Solver1'}]({solver_links.get(solvers_list[0], '#') if solvers_list else '#'})"
+        )
+        readme_content = readme_content.replace(
+            "[Link]", 
+            f"[{solvers_list[1] if len(solvers_list) > 1 else 'Solver2'}]({solver_links.get(solvers_list[1], '#') if len(solvers_list) > 1 else '#'})"
+        )
 
         # Write the updated README with UTF-8 encoding
         with open(self.structure.README, 'w', encoding='utf-8') as readme_file:
