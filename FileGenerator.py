@@ -92,6 +92,26 @@ class FileGenerator:
     
     def _generate_README(self) -> None:
         """Generates the README.md file with dynamic content based on simulation configuration"""
+        # Comprehensive solver documentation links
+        SOLVER_DOCS = {
+            # CFD Solvers
+            'openfoam': 'https://www.openfoam.com/documentation',
+            'su2': 'https://su2code.github.io/docs/home/',
+            'foam-extend': 'https://sourceforge.net/p/foam-extend/',
+            
+            # Structural Solvers
+            'calculix': 'https://www.calculix.de/',
+            'elmer': 'https://www.elmersolver.com/documentation/',
+            'code_aster': 'https://www.code-aster.org/V2/doc/default/en/index.php',
+            
+            # Other Solvers
+            'fenics': 'https://fenicsproject.org/docs/',
+            'dealii': 'https://dealii.org/current/doxygen/deal.II/index.html',
+            
+            # Fallback
+            'default': 'https://precice.org/adapter-list.html'
+        }
+
         # Read the template README with explicit UTF-8 encoding
         with open(Path(__file__).parent / "templates" / "template_README.md", 'r', encoding='utf-8') as template_file:
             readme_content = template_file.read()
@@ -101,13 +121,20 @@ class FileGenerator:
         solvers_list = []
         solver_links = {}
 
-        for participant_name, participant_info in self.user_ui.participants.items():
-            solver_name = participant_info.solverName
-            participants_list.append(participant_name)
-            solvers_list.append(solver_name)
-            
-            # You can expand this with actual solver documentation links if known
-            solver_links[solver_name] = "https://example.com/solver-docs"
+        # Ensure participants exist before processing
+        if not hasattr(self.user_ui, 'participants') or not self.user_ui.participants:
+            self.logger.warning("No participants found. Using default placeholders.")
+            participants_list = ["DefaultParticipant"]
+            solvers_list = ["DefaultSolver"]
+        else:
+            for participant_name, participant_info in self.user_ui.participants.items():
+                # Safely get solver name with fallback
+                solver_name = getattr(participant_info, 'solverName', 'UnknownSolver').lower()
+                participants_list.append(participant_name)
+                solvers_list.append(solver_name)
+                
+                # Get solver documentation link, use default if not found
+                solver_links[solver_name] = SOLVER_DOCS.get(solver_name, SOLVER_DOCS['default'])
 
         # Determine coupling strategy (you might want to extract this from topology.yaml)
         coupling_strategy = "Partitioned" if len(participants_list) > 1 else "Single Solver"
@@ -131,7 +158,7 @@ class FileGenerator:
             readme_file.write(readme_content)
 
         self.logger.success(f"Generated README at {self.structure.README}")
-
+    
     def _generate_run(self, run_sh: Path) -> None:
         """Generates the run.sh file
             :param run_sh: Path to the run.sh file"""
