@@ -180,6 +180,14 @@ class FileGenerator:
             f"[{solvers_list[1] if len(solvers_list) > 1 else 'Solver2'}]({solver_links.get(solvers_list[1].lower(), '#') if len(solvers_list) > 1 else '#'})"
         )
 
+        # Generate comprehensive solver links
+        solver_links_section = "**Solvers Links and Names**:\n"
+        for solver_name, solver_link in solver_links.items():
+            solver_links_section += f"- {original_solver_names.get(solver_name, solver_name.capitalize())}: [{solver_name.upper()}]({solver_link})\n"
+        
+        # Replace the placeholder with the generated solver links
+        readme_content = readme_content.replace("[Solvers Links and Names]", solver_links_section)
+
         # Write the updated README with UTF-8 encoding
         with open(self.structure.README, 'w', encoding='utf-8') as readme_file:
             readme_file.write(readme_content)
