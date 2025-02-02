@@ -120,6 +120,7 @@ class FileGenerator:
         participants_list = []
         solvers_list = []
         solver_links = {}
+        original_solver_names = {}
 
         # Ensure participants exist before processing
         if not hasattr(self.user_ui, 'participants') or not self.user_ui.participants:
@@ -128,10 +129,13 @@ class FileGenerator:
             solvers_list = ["DefaultSolver"]
         else:
             for participant_name, participant_info in self.user_ui.participants.items():
-                # Safely get solver name with fallback
-                solver_name = getattr(participant_info, 'solverName', 'UnknownSolver').lower()
+                # Preserve original solver name
+                original_solver_name = getattr(participant_info, 'solverName', 'UnknownSolver')
+                solver_name = original_solver_name.lower()
+                
                 participants_list.append(participant_name)
-                solvers_list.append(solver_name)
+                solvers_list.append(original_solver_name)
+                original_solver_names[solver_name] = original_solver_name
                 
                 # Get solver documentation link, use default if not found
                 solver_links[solver_name] = SOLVER_DOCS.get(solver_name, SOLVER_DOCS['default'])
@@ -151,11 +155,11 @@ class FileGenerator:
         # Explicitly replace solver links
         readme_content = readme_content.replace(
             "[Link]", 
-            f"[{solvers_list[0] if solvers_list else 'Solver1'}]({solver_links.get(solvers_list[0], '#') if solvers_list else '#'})"
+            f"[{solvers_list[0] if solvers_list else 'Solver1'}]({solver_links.get(solvers_list[0].lower(), '#') if solvers_list else '#'})"
         )
         readme_content = readme_content.replace(
             "[Link]", 
-            f"[{solvers_list[1] if len(solvers_list) > 1 else 'Solver2'}]({solver_links.get(solvers_list[1], '#') if len(solvers_list) > 1 else '#'})"
+            f"[{solvers_list[1] if len(solvers_list) > 1 else 'Solver2'}]({solver_links.get(solvers_list[1].lower(), '#') if len(solvers_list) > 1 else '#'})"
         )
 
         # Write the updated README with UTF-8 encoding
