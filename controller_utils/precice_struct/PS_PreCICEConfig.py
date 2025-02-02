@@ -95,7 +95,28 @@ class PS_PreCICEConfig(object):
         return None
 
     def create_config(self, user_input: UI_UserInput):
-        """Creates the main preCICE config from the UI structure."""
+        """
+        Create configuration based on user input.
+        
+        Determines coupling scheme based on:
+        1. Explicitly defined coupling_type in user input
+        2. Fallback to implicit (strong) if no type specified
+        """
+        # Determine coupling scheme based on coupling type
+        if hasattr(user_input, 'coupling_type'):
+            if user_input.coupling_type == 'strong':
+                self.couplingScheme = PS_ImplicitCoupling()
+            elif user_input.coupling_type == 'weak':
+                self.couplingScheme = PS_ExplicitCoupling()
+            else:
+                # Fallback to implicit if invalid type
+                self.couplingScheme = PS_ImplicitCoupling()
+        else:
+            # Default to implicit coupling if no type specified
+            self.couplingScheme = PS_ImplicitCoupling()
+        
+        # Initialize coupling scheme with user input
+        self.couplingScheme.initFromUI(user_input, self)
 
         # participants
         for participant_name in user_input.participants:
@@ -140,31 +161,6 @@ class PS_PreCICEConfig(object):
                     self, coupling.boundaryC1, coupling.boundaryC2, participant1_solver.name)
                 pass
             pass
-
-        # if we have one conjugate heat or FSI then we must use implicit coupling
-        # print(" COUPLING VALUE = ", max_coupling_value)
-        
-        # Check if topology types are available
-        topology_types = [coupling.topology_type for coupling in user_input.couplings if hasattr(coupling, 'topology_type')]
-        
-        if topology_types:
-            # If all topology types are 'strong', use implicit coupling
-            if all(type_val == 'strong' for type_val in topology_types):
-                self.couplingScheme = PS_ImplicitCoupling()
-            else:
-                # If mixed types, fall back to original max_coupling_value logic
-                if max_coupling_value < 2:
-                    self.couplingScheme = PS_ImplicitCoupling()
-                else:
-                    self.couplingScheme = PS_ExplicitCoupling()
-        else:
-            # Original behavior if no topology types are present
-            if max_coupling_value < 2:
-                self.couplingScheme = PS_ImplicitCoupling()
-            else:
-                self.couplingScheme = PS_ExplicitCoupling()
-        
-        self.couplingScheme.initFromUI( user_input, self )
 
         pass
 
