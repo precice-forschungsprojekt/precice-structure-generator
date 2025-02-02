@@ -114,10 +114,9 @@ class PS_PreCICEConfig(object):
         else:
             # Default to implicit coupling if no type specified
             self.couplingScheme = PS_ImplicitCoupling()
-        
+
         # Initialize coupling scheme with user input
         self.couplingScheme.initFromUI(user_input, self)
-
         # participants
         for participant_name in user_input.participants:
             # print("particip:", participant_name)
