@@ -68,14 +68,9 @@ pip install -e .
 
 ### Verifying Installation
 
-1. Run tests
+- Test the CLI tool
 ```bash
-pytest
-```
-
-2. Test the CLI tool
-```bash
-precice-structure-generator --help
+precice-genesis --help
 ```
 
 ## Usage
