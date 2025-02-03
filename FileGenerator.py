@@ -155,13 +155,10 @@ class FileGenerator:
         
         # Generate adapter configuration paths for all participants
         adapter_config_paths = []
-        print("Participants:", participants_list)
-        print("Original Solver Names:", original_solver_names)
         
         for participant in participants_list:
             # Find the corresponding solver name for this participant
             solver_name = original_solver_names.get(participant.lower(), 'solver')
-            print(f"Participant: {participant}, Solver Name: {solver_name}")
             adapter_config_paths.append(f"- **{participant}**: `{participant}-{solver_name}/adapter-config.json`")
         
         # Replace adapter configuration section
