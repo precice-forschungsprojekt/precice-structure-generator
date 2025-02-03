@@ -47,7 +47,7 @@ dev = [
 ]
 
 [project.scripts]
-precice-structure-generator = "FileGenerator:main"
+precice-genesis = "FileGenerator:main"
 
 [project.urls]
 Repository = "https://github.com/precice-forschungsprojekt/PreCICE-Genesis"
