@@ -303,24 +303,38 @@ class PrettyPrinter():
                 # Print coupling-scheme opening tag
                 self.print(self.indent * level + "<{}>".format(group.tag))
                 
-                # Print initial elements
+                # Print initial elements and other non-standard elements
+                initial_tags = ['participants', 'max-time', 'time-window-size']
                 initial_elements = [
                     elem for elem in other_elements 
-                    if str(elem.tag) in ['participants', 'max-time', 'time-window-size']
+                    if str(elem.tag) in initial_tags
                 ]
+                other_non_initial_elements = [
+                    elem for elem in other_elements 
+                    if str(elem.tag) not in initial_tags
+                ]
+                
+                # Print initial elements first
                 for child in initial_elements:
                     self.printElement(child, level + 1)
                 
+                # If there are other non-initial elements, print them
+                if other_non_initial_elements:
+                    if initial_elements:
+                        self.print()
+                    for child in other_non_initial_elements:
+                        self.printElement(child, level + 1)
+                
                 # Print convergence measures first
                 if convergence_elements:
-                    if initial_elements:
+                    if initial_elements or other_non_initial_elements:
                         self.print()
                     for conv in convergence_elements:
                         self.printElement(conv, level + 1)
                 
                 # Print exchanges
                 if exchange_elements:
-                    if initial_elements or convergence_elements:
+                    if initial_elements or convergence_elements or other_non_initial_elements:
                         self.print()
                     for exchange in exchange_elements:
                         self.printElement(exchange, level + 1)
@@ -331,21 +345,20 @@ class PrettyPrinter():
                     if str(elem.tag) == 'max-iterations'
                 ]
                 if max_iterations:
-                    if exchange_elements or convergence_elements or initial_elements:
+                    if exchange_elements or convergence_elements or initial_elements or other_non_initial_elements:
                         self.print()
                     for child in max_iterations:
                         self.printElement(child, level + 1)
                 
                 # Print acceleration elements
                 if acceleration_elements:
-                    if exchange_elements or convergence_elements or max_iterations or initial_elements:
+                    if exchange_elements or convergence_elements or max_iterations or initial_elements or other_non_initial_elements:
                         self.print()
                     for child in acceleration_elements:
                         self.printElement(child, level + 1)
                 
                 # Close coupling-scheme tag
-                self.print("{}</{}>"
-                    .format(self.indent * level, group.tag))
+                self.print("{}</{}>".format(self.indent * level, group.tag))
                 
                 # Add newline after coupling-scheme if not the last element
                 if i < last:
