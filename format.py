@@ -254,8 +254,11 @@ class PrettyPrinter():
                     elem for elem in other_elements 
                     if str(elem.tag) in ['participants', 'max-time', 'time-window-size']
                 ]
+                # Print initial elements first
                 for child in initial_elements:
                     self.printElement(child, level + 1)
+                    # Remove the printed elements from the list
+                    other_elements.remove(child)
                 
                 #TODO print all other elements
 
