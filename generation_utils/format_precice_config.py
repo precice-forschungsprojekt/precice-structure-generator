@@ -310,35 +310,29 @@ class PrettyPrinter():
                 ]
                 for child in initial_elements:
                     self.printElement(child, level + 1)
+                    other_elements.remove(child)
+
+                # Print all other elements
+                for child in other_elements:
+                    self.printElement(child, level + 1)
                 
-                # Print convergence measures first
+                # Print convergence measures
                 if convergence_elements:
-                    if initial_elements:
+                    if initial_elements or other_elements:
                         self.print()
                     for conv in convergence_elements:
                         self.printElement(conv, level + 1)
                 
                 # Print exchanges
                 if exchange_elements:
-                    if initial_elements or convergence_elements:
+                    if initial_elements or convergence_elements or other_elements:
                         self.print()
                     for exchange in exchange_elements:
                         self.printElement(exchange, level + 1)
                 
-                # Print max-iterations if present
-                max_iterations = [
-                    elem for elem in other_elements 
-                    if str(elem.tag) == 'max-iterations'
-                ]
-                if max_iterations:
-                    if exchange_elements or convergence_elements or initial_elements:
-                        self.print()
-                    for child in max_iterations:
-                        self.printElement(child, level + 1)
-                
                 # Print acceleration elements
                 if acceleration_elements:
-                    if exchange_elements or convergence_elements or max_iterations or initial_elements:
+                    if exchange_elements or convergence_elements or max_iterations or initial_elements or other_elements:
                         self.print()
                     for child in acceleration_elements:
                         self.printElement(child, level + 1)
