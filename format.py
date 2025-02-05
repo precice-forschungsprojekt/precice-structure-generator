@@ -260,9 +260,10 @@ class PrettyPrinter():
                     # Remove the printed elements from the list
                     other_elements.remove(child)
                 
-                #TODO print all other elements
-
-
+                # Print all other elements
+                for child in other_elements:
+                    self.printElement(child, level + 1)
+                
                 # Print convergence measures first
                 if convergence_elements:
                     # Add newline before convergence measures if there are initial elements
