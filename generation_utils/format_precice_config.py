@@ -312,9 +312,11 @@ class PrettyPrinter():
                     self.printElement(child, level + 1)
                     other_elements.remove(child)
 
-                # Print all other elements
-                for child in other_elements:
-                    self.printElement(child, level + 1)
+                if initial_elements:
+                    self.print()
+                    # Print all other elements
+                    for child in other_elements:
+                        self.printElement(child, level + 1)
                 
                 # Print convergence measures
                 if convergence_elements:
