@@ -257,8 +257,12 @@ class PrettyPrinter():
                 for child in initial_elements:
                     self.printElement(child, level + 1)
                 
+                #TODO print all other elements
+
+
                 # Print convergence measures first
                 if convergence_elements:
+                    # Add newline before convergence measures if there are initial elements
                     if initial_elements:
                         self.print()
                     for conv in convergence_elements:
@@ -271,20 +275,21 @@ class PrettyPrinter():
                     for exchange in exchange_elements:
                         self.printElement(exchange, level + 1)
                 
-                # Print max-iterations if present
-                max_iterations = [
-                    elem for elem in other_elements 
-                    if str(elem.tag) == 'max-iterations'
-                ]
-                if max_iterations:
-                    if exchange_elements or convergence_elements or initial_elements:
-                        self.print()
-                    for child in max_iterations:
-                        self.printElement(child, level + 1)
+                # # Print max-iterations if present
+                # max_iterations = [
+                #     elem for elem in other_elements 
+                #     if str(elem.tag) == 'max-iterations'
+                # ]
+                # if max_iterations:
+                #     if exchange_elements or convergence_elements or initial_elements:
+                #         self.print()
+                #     for child in max_iterations:
+                #         self.printElement(child, level + 1)
                 
                 # Print acceleration elements
                 if acceleration_elements:
-                    if exchange_elements or convergence_elements or max_iterations or initial_elements:
+                    # if exchange_elements or convergence_elements or max_iterations or initial_elements:
+                    if exchange_elements or convergence_elements or initial_elements:
                         self.print()
                     for child in acceleration_elements:
                         self.printElement(child, level + 1)
