@@ -272,6 +272,11 @@ def main():
         help="Output path for the generated folder.",
         default=Path(__file__).parent
     )
+    parser.add_argument(
+        "--no-format", 
+        action="store_true", 
+        help="Disable formatting of preCICE configuration"
+    )
 
     args = parser.parse_args()
 
@@ -279,9 +284,9 @@ def main():
     fileGenerator.generate_level_0()
     fileGenerator.generate_level_1()
     
-    # Format the generated preCICE configuration
-
-    fileGenerator.format_precice_config()
+    # Conditionally format preCICE configuration
+    if not args.no_format:
+        fileGenerator.format_precice_config()
 
 if __name__ == "__main__":
     main()
