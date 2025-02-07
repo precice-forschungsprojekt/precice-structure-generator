@@ -9,6 +9,40 @@ import shutil
 
 CONVERGENCE_MEASURE_TAGS = ['relative-convergence-measure', 'absolute-convergence-measure', 'absolute-or-relative-convergence-measure']
 
+TOP_LEVEL_ORDER = {
+    'data:': 1,
+    'mesh': 2,
+    'participant': 3,
+    'm2n:': 4,
+    'coupling-scheme:': 5
+}
+
+def custom_sort_key(elem, order):
+    """
+    Custom sorting key for XML elements like top-level-order.
+    
+    Args:
+        elem (etree._Element): XML element to sort
+        order (dict): Dictionary mapping prefix to rank
+    
+    Returns:
+        int: Sorting rank for the element
+    """
+    tag = str(elem.tag)
+    # Find the first matching key
+    for prefix, rank in order.items():
+        if tag.startswith(prefix):
+            return rank
+    # Dynamically assign the next number for unknown elements
+    if not hasattr(custom_sort_key, 'unknown_counter'):
+        custom_sort_key.unknown_counter = len(order) + 1
+    
+    #Add this? Each time an unknown element is encountered, the counter is incremented, giving each unique unknown element a distinct sorting rank.
+    # custom_sort_key.unknown_counter += 1
+
+    return custom_sort_key.unknown_counter
+
+
 def isEmptyTag(element):
     return not element.getchildren()
 
@@ -118,25 +152,8 @@ class PrettyPrinter():
                 self.printElement(child, level=level)
             return
 
-        # Custom sorting for top-level elements
-        def custom_sort_key(elem):
-            tag = str(elem.tag)
-            # Predefined order for top-level elements with prefix matching
-            order = {
-                'data:': 1,  # Matches data:vector, data:scalar, etc.
-                'mesh': 2,
-                'participant': 3,
-                'm2n:': 4,
-                'coupling-scheme:': 5
-            }
-            # Find the first matching key
-            for prefix, rank in order.items():
-                if tag.startswith(prefix):
-                    return rank
-            return 6  # Unknown elements appear last
-
         # Sort children based on the predefined order
-        sorted_children = sorted(element.getchildren(), key=custom_sort_key)
+        sorted_children = sorted(element.getchildren(), key=lambda elem: custom_sort_key(elem, TOP_LEVEL_ORDER))
 
         last = len(sorted_children)
         for i, group in enumerate(sorted_children, start=1):
