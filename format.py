@@ -171,11 +171,7 @@ class PrettyPrinter():
                 # Sort participant's children based on the defined order
                 sorted_participant_children = sorted(
                     group.getchildren(), 
-                    key=lambda child: next(
-                        (rank for prefix, rank in PARTICIPANT_ORDER.items() 
-                         if str(child.tag).startswith(prefix)), 
-                        6  # Unknown elements appear last
-                    )
+                    key=lambda child: custom_sort_key(child, PARTICIPANT_ORDER)
                 )
                 
                 # Separate different types of elements
