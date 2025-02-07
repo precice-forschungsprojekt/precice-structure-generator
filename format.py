@@ -17,6 +17,14 @@ TOP_LEVEL_ORDER = {
     'coupling-scheme:': 5
 }
 
+PARTICIPANT_ORDER = {
+    'provide-mesh': 1,
+    'receive-mesh': 2,
+    'write-data': 3,
+    'read-data': 4,
+    'mapping:': 5
+}
+
 def custom_sort_key(elem, order):
     """
     Custom sorting key for XML elements like top-level-order.
@@ -159,20 +167,12 @@ class PrettyPrinter():
         for i, group in enumerate(sorted_children, start=1):
             # Special handling for participants to reorder child elements
             if 'participant' in str(group.tag):
-                # Define order for participant child elements with more generalized matching
-                participant_order = {
-                    'provide-mesh': 1,
-                    'receive-mesh': 2,
-                    'write-data': 3,
-                    'read-data': 4,
-                    'mapping:': 5  # Matches mapping:nearest-neighbor, mapping:rbf, etc.
-                }
                 
                 # Sort participant's children based on the defined order
                 sorted_participant_children = sorted(
                     group.getchildren(), 
                     key=lambda child: next(
-                        (rank for prefix, rank in participant_order.items() 
+                        (rank for prefix, rank in PARTICIPANT_ORDER.items() 
                          if str(child.tag).startswith(prefix)), 
                         6  # Unknown elements appear last
                     )
